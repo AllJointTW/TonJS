@@ -1,0 +1,17 @@
+{
+  "name": "@alljoint-next/tonjs",
+  "version": "0.0.0",
+  "description": "The Node.js Web Framework Can Do A Ton Of Request",
+  "main": "dist/index.js",
+  "repository": "git@github.com:AllJointTW/TonJS.git",
+  "author": "TZU-YEN, CHANG <try_love_tom@alljoint.tw>",
+  "license": "GPL-3.0",
+  "scripts": {
+    "format": ":",
+    "lint": ":",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "uWebSockets.js": "uNetworking/uWebSockets.js#v17.1.0"
+  }
+}
