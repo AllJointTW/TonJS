@@ -1,0 +1,26 @@
+{
+  "name": "tonjs",
+  "version": "0.0.0",
+  "description": "The Node.js Web Framework Can Do A Ton Of Request",
+  "main": "index.js",
+  "repository": "git@github.com:AllJointTW/TonJS.git",
+  "author": "TZU-YEN, CHANG <try_love_tom@alljoint.tw>",
+  "license": "GPL-3.0",
+  "scripts": {
+    "format": "prettier **/*.{js,json,ts,md,yaml} !**/dist/** !./dist/** --write && yarn lint --fix",
+    "lint": "eslint **/*.ts"
+  },
+  "dependencies": {
+    "uWebSockets.js": "uNetworking/uWebSockets.js#v17.1.0"
+  },
+  "devDependencies": {
+    "@alljoint-next/eslint-config-typescript": "^0.1.3",
+    "@alljoint-next/ts-config": "^0.1.2",
+    "@commitlint/cli": "^8.3.5",
+    "@commitlint/config-conventional": "^8.3.4",
+    "eslint": "^6.8.0",
+    "husky": "^4.2.3",
+    "prettier": "^1.19.1",
+    "typescript": "^3.8.2"
+  }
+}
