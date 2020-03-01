@@ -32,6 +32,7 @@ export type TonMethods =
   | "ANY"
   | "WS"
   | "PUBLISH";
+export type TonListenSocket = uWS.us_listen_socket; // eslint-disable-line
 
 const ContentType = "Content-Type";
 
@@ -272,4 +273,21 @@ export function route(
   routeHandler: TonHandler
 ) {
   app[methods.toLocaleLowerCase()](pattern, handler(routeHandler));
+}
+
+export function registerGracefulShutdown(socket: TonListenSocket) {
+  let hasBeenShutdown = false;
+
+  const wrapper = () => {
+    if (!hasBeenShutdown) {
+      hasBeenShutdown = true;
+      // eslint-disable-next-line
+      console.info("Gracefully shutting down. Please wait...");
+      uWS.us_listen_socket_close(socket);
+    }
+  };
+
+  process.on("SIGINT", wrapper);
+  process.on("SIGTERM", wrapper);
+  process.on("exit", wrapper);
 }

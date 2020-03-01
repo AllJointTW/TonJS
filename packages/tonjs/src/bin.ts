@@ -1,6 +1,12 @@
 import path from "path";
 import uWS from "uWebSockets.js";
-import { route, TonHandler, TonMethods } from "./index";
+import {
+  route,
+  TonHandler,
+  TonMethods,
+  TonListenSocket,
+  registerGracefulShutdown
+} from "./index";
 
 import yargs = require("yargs");
 
@@ -57,12 +63,15 @@ async function main() {
     route(app, "ANY", "*", endpoints as TonHandler);
   }
 
-  app.listen(argv.host, argv.port, token => {
+  app.listen(argv.host, argv.port, (token: TonListenSocket) => {
     if (!token) {
-      console.info(`\nfailed to listen on ${argv.host}:${argv.port}`); // eslint-disable-line
+      // eslint-disable-next-line
+      console.info(`\nfailed to listen on ${argv.host}:${argv.port}`);
       return;
     }
-    console.info(`\nyou raise me up, to listen on ${argv.host}:${argv.port}`); // eslint-disable-line
+    // eslint-disable-next-line
+    console.info(`\nyou raise me up, to listen on http://${argv.host}:${argv.port}`);
+    registerGracefulShutdown(token);
   });
 }
 
