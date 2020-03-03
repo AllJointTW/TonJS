@@ -4,12 +4,12 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "nodemon --watch 'packages/**/*.ts' --ignore 'packages/**/*.{spec,test}.ts' --exec 'ts-node' packages/tonjs/src/bin.ts example/bin.ts",
-    "format": "prettier **/*.{js,json,ts,md,yaml} !**/dist/** !./dist/** --write && yarn lint --fix",
+    "dev": "nodemon --watch 'packages/**/*.ts' --ignore 'packages/**/*.{spec,test}.ts' --exec 'ts-node' packages/tonjs/src/bin.ts packages/tonjs/index.js",
+    "format": "prettier **/*.{js,json,ts,md,yaml} !**/dist/** !./dist/** --write --no-semi --single-quote && yarn lint --fix",
     "lint": "eslint **/*.ts"
   },
   "devDependencies": {
-    "@alljoint-next/eslint-config-typescript": "^0.2.0",
+    "@alljoint-next/eslint-config-typescript": "^0.3.0",
     "@alljoint-next/ts-config": "^0.1.2",
     "@commitlint/cli": "^8.3.5",
     "@commitlint/config-conventional": "^8.3.4",

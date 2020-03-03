@@ -1,78 +1,80 @@
-import path from "path";
-import uWS from "uWebSockets.js";
+import path from 'path'
+import uWS from 'uWebSockets.js'
 import {
   route,
   TonHandler,
   TonMethods,
   TonListenSocket,
   registerGracefulShutdown
-} from "./index";
+} from './index'
 
-import yargs = require("yargs");
+import yargs = require('yargs')
 
 const { argv } = yargs
-  .scriptName("ton")
-  .usage("Usage: $0 <entry> <options>")
+  .scriptName('ton')
+  .usage('Usage: $0 <entry> <options>')
   .help()
   .version()
-  .alias("version", "v")
-  .epilogue("for more information, find our docs at https://tonjs.com")
-  .example("$0 index.js", "listen on 0.0.0.0:3000 and index.js as the entry.")
-  .locale("en")
+  .alias('version', 'v')
+  .epilogue('for more information, find our docs at https://tonjs.com')
+  .example('$0 index.js', 'listen on 0.0.0.0:3000 and index.js as the entry.')
+  .locale('en')
   .options({
     host: {
-      type: "string",
-      alias: "h",
-      desc: "Specify the host name",
-      default: "0.0.0.0"
+      type: 'string',
+      alias: 'h',
+      desc: 'Specify the host name',
+      default: '0.0.0.0'
     },
     port: {
-      type: "number",
-      alias: "p",
-      desc: "Specify the port number",
+      type: 'number',
+      alias: 'p',
+      desc: 'Specify the port number',
       default: 3000
     }
-  });
+  })
 
 async function main() {
-  const [entry = "index.js"] = argv._;
-  const app = uWS.App();
+  const [entry = 'index.js'] = argv._
+  const app = uWS.App()
   const endpoints: TonHandler | { [pattern: string]: TonHandler } = (
     await import(path.resolve(process.cwd(), entry))
-  ).default;
-  const httpPattern = /(^GET|POST|OPTIONS|DEL|PATCH|PUT|HEAD|CONNECT|TRACE|ANY|WS|PUBLISH)\s+(\S+)/;
+  ).default
+  const httpPattern = /(^GET|POST|OPTIONS|DEL|PATCH|PUT|HEAD|CONNECT|TRACE|ANY|WS|PUBLISH)\s+(\S+)/
 
-  console.info("\nroutes:"); // eslint-disable-line
-  if (typeof endpoints === "object" && endpoints !== null) {
+  console.info('\nroutes:') // eslint-disable-line
+  if (typeof endpoints === 'object' && endpoints !== null) {
     Object.keys(endpoints).forEach(key => {
-      const results = key.match(httpPattern);
+      const results = key.match(httpPattern)
       if (!results) {
-        throw new Error(`routes: can't parse ${key}`);
+        throw new Error(`routes: can't parse ${key}`)
       }
-      const [, methods, pattern] = results;
-      let handlerName = endpoints[key].name || "anonymous";
+      const [, methods, pattern] = results
+      let handlerName = endpoints[key].name || 'anonymous'
       if (handlerName === key) {
-        handlerName = "anonymous";
+        handlerName = 'anonymous'
       }
-      console.info(`  ${key} => ${handlerName}()`); // eslint-disable-line
-      route(app, methods as TonMethods, pattern, endpoints[key] as TonHandler);
-    });
+      console.info(`  ${key} => ${handlerName}()`) // eslint-disable-line
+      route(app, methods as TonMethods, pattern, endpoints[key] as TonHandler)
+    })
   } else {
-    const handlerName = endpoints.name || "anonymous";
-    console.info(`  * => ${handlerName}()`); // eslint-disable-line
-    route(app, "ANY", "*", endpoints as TonHandler);
+    const handlerName = endpoints.name || 'anonymous'
+    console.info(`  * => ${handlerName}()`) // eslint-disable-line
+    route(app, 'ANY', '*', endpoints as TonHandler)
   }
 
   app.listen(argv.host, argv.port, (token: TonListenSocket) => {
     if (!token) {
       // eslint-disable-next-line
-      console.info(`\nfailed to listen on ${argv.host}:${argv.port}`);
-      return;
+      console.info(`\nfailed to listen on ${argv.host}:${argv.port}`)
+      return
     }
     // eslint-disable-next-line
-    console.info(`\nyou raise me up, to listen on http://${argv.host}:${argv.port}`);
-    registerGracefulShutdown(token);
-  });
+    console.info(
+      `\nyou raise me up, to listen on http://${argv.host}:${argv.port}`
+    )
+    registerGracefulShutdown(token)
+  })
 }
 
-main();
+main()
