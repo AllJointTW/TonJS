@@ -87,7 +87,7 @@ async function main() {
       route(app, 'ANY', '*', endpoints as TonHandler)
     }
 
-    const token = await listen(app, argv.host, argv.port)
+    const token: TonListenSocket = await listen(app, argv.host, argv.port)
     registerGracefulShutdown(token)
     // eslint-disable-next-line
     console.info(

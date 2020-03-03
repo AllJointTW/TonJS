@@ -19,9 +19,7 @@ async function main() {
   const token = await listen(app, host, port)
   registerGracefulShutdown(token)
   // eslint-disable-next-line
-  console.info(
-    `\nyou raise me up, to listen on http://${host}:${port}\n`
-  )
+  console.info(`\nyou raise me up, to listen on http://${host}:${port}\n`)
 }
 
 main()
