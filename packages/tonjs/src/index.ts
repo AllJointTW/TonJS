@@ -33,6 +33,9 @@ export type TonMethods =
   | 'WS'
   | 'PUBLISH'
 export type TonListenSocket = uWS.us_listen_socket // eslint-disable-line
+export type TonRoutes = {
+  [patter: string]: { methods: TonMethods; handler: TonHandler }
+}
 
 const ContentType = 'Content-Type'
 

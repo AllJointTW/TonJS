@@ -3,9 +3,9 @@ import uWS from 'uWebSockets.js'
 import {
   route,
   TonHandler,
-  TonMethods,
   TonListenSocket,
-  registerGracefulShutdown
+  registerGracefulShutdown,
+  TonRoutes
 } from './index'
 
 import yargs = require('yargs')
@@ -37,29 +37,25 @@ const { argv } = yargs
 async function main() {
   const [entry = 'index.js'] = argv._
   const app = uWS.App()
-  const endpoints: TonHandler | { [pattern: string]: TonHandler } = (
+  const endpoints: TonHandler | TonRoutes = (
     await import(path.resolve(process.cwd(), entry))
   ).default
-  const httpPattern = /(^GET|POST|OPTIONS|DEL|PATCH|PUT|HEAD|CONNECT|TRACE|ANY|WS|PUBLISH)\s+(\S+)/
 
   console.info('\nroutes:') // eslint-disable-line
   if (typeof endpoints === 'object' && endpoints !== null) {
-    Object.keys(endpoints).forEach(key => {
-      const results = key.match(httpPattern)
-      if (!results) {
-        throw new Error(`routes: can't parse ${key}`)
-      }
-      const [, methods, pattern] = results
-      let handlerName = endpoints[key].name || 'anonymous'
-      if (handlerName === key) {
+    Object.keys(endpoints as TonRoutes).forEach(key => {
+      const pattern = key
+      const { methods, handler } = endpoints[key]
+      let handlerName = handler.name || 'anonymous'
+      if (handlerName === 'handler') {
         handlerName = 'anonymous'
       }
       console.info(`  ${key} => ${handlerName}()`) // eslint-disable-line
-      route(app, methods as TonMethods, pattern, endpoints[key] as TonHandler)
+      route(app, methods, pattern, handler)
     })
   } else {
-    const handlerName = endpoints.name || 'anonymous'
-    console.info(`  * => ${handlerName}()`) // eslint-disable-line
+    const { name = 'anonymous' } = endpoints as TonHandler
+    console.info(`  * => ${name}()`) // eslint-disable-line
     route(app, 'ANY', '*', endpoints as TonHandler)
   }
 
