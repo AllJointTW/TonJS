@@ -285,7 +285,7 @@ export function registerGracefulShutdown(socket: TonListenSocket) {
     if (!hasBeenShutdown) {
       hasBeenShutdown = true
       // eslint-disable-next-line
-      console.info('Gracefully shutting down. Please wait...')
+      console.info('gracefully shutting down. please wait...')
       uWS.us_listen_socket_close(socket)
     }
   }

@@ -1,11 +1,10 @@
-import { TonRoutes, send, redirect } from './index'
+import { TonRoutes, send, redirect } from '../src/index'
 
-// export default ((req, res) => send(res, 200, '')) as TonHandler
-
-export default {
+const server: TonRoutes = {
   '/': { methods: 'GET', handler: (req, res) => send(res, 200, 'TonJS') },
   '/redirect': {
     methods: 'GET',
     handler: (req, res) => redirect(res, 302, 'https://tonjs.com')
   }
-} as TonRoutes
+}
+export default server
