@@ -1,6 +1,7 @@
 import path from 'path'
-import uWS from 'uWebSockets.js'
 import {
+  createApp,
+  listen,
   route,
   TonHandler,
   TonListenSocket,
@@ -35,32 +36,35 @@ const { argv } = yargs
     ssl: {
       type: 'boolean',
       desc: 'Need SSL?',
-      implies: ['ssl-key', 'ssl-cert']
+      implies: ['key', 'cert']
     },
-    'ssl-key': {
+    key: {
       type: 'string',
       desc: 'Specify the path of key of SSL'
     },
-    'ssl-cert': {
+    cert: {
       type: 'string',
       desc: 'Specify the path of cert of SSL'
     },
     passphrase: {
       type: 'string',
       desc: 'Specify the passphrase of SSL cert'
+    },
+    dhParams: {
+      type: 'string',
+      desc: 'Specify the path of params.dh of SSL'
+    },
+    preferLowMemoryUsage: {
+      type: 'boolean',
+      desc:
+        'Translate SSL to buffer, not only low memory, but also low performance'
     }
   })
 
 async function main() {
   try {
     const [entry = 'index.js'] = argv._
-    const app = argv.ssl
-      ? uWS.SSLApp({
-          cert_file_name: argv['ssl-cert'], // eslint-disable-line
-          key_file_name: argv['ssl-key'], // eslint-disable-line
-          passphrase: argv.passphrase
-        })
-      : uWS.App()
+    const app = createApp(argv)
     const endpoints: TonHandler | TonRoutes = (
       await import(path.resolve(process.cwd(), entry))
     ).default
@@ -83,19 +87,14 @@ async function main() {
       route(app, 'ANY', '*', endpoints as TonHandler)
     }
 
-    app.listen(argv.host, argv.port, (token: TonListenSocket) => {
-      if (!token) {
-        // eslint-disable-next-line
-        console.info(`\nfailed to listen on ${argv.host}:${argv.port}`)
-        return
-      }
-      // eslint-disable-next-line
-      console.info(
-        `\nyou raise me up, to listen on http://${argv.host}:${argv.port}`
-      )
-      registerGracefulShutdown(token)
-    })
+    const token = await listen(app, argv.host, argv.port)
+    registerGracefulShutdown(token)
+    // eslint-disable-next-line
+    console.info(
+      `\nyou raise me up, to listen on http://${argv.host}:${argv.port}\n`
+    )
   } catch (err) {
+    console.info(`\nfailed to listen on ${argv.host}:${argv.port}\n`) // eslint-disable-line
     console.error(err) // eslint-disable-line
   }
 }

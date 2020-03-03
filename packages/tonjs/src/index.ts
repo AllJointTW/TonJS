@@ -5,6 +5,14 @@ import bytes from 'bytes'
 import { readable } from 'is-stream'
 
 export type TonApp = uWS.TemplatedApp
+export type TonAppOptions = {
+  ssl?: boolean
+  key?: string
+  cert?: string
+  passphrase?: string
+  dhParams?: string
+  preferLowMemoryUsage?: boolean
+}
 export type TonRequest = uWS.HttpRequest
 export type TonResponse = uWS.HttpResponse & { aborted: boolean }
 export type TonStream = stream.Readable & { size?: number }
@@ -293,4 +301,32 @@ export function registerGracefulShutdown(socket: TonListenSocket) {
   process.on('SIGINT', wrapper)
   process.on('SIGTERM', wrapper)
   process.on('exit', wrapper)
+}
+
+export function createApp(options: TonAppOptions = {}): TonApp {
+  if (options.ssl) {
+    return uWS.SSLApp({
+      key_file_name: options.key, // eslint-disable-line
+      cert_file_name: options.cert, // eslint-disable-line
+      passphrase: options.passphrase,
+      dh_params_file_name: options.dhParams, // eslint-disable-line
+      ssl_prefer_low_memory_usage: options.preferLowMemoryUsage // eslint-disable-line
+    })
+  }
+  return uWS.App()
+}
+
+export function listen(
+  app: TonApp,
+  host: string,
+  port: number
+): Promise<TonListenSocket> {
+  return new Promise((resolve, reject) => {
+    app.listen(host, port, (token: TonListenSocket) => {
+      if (!token) {
+        return reject()
+      }
+      return resolve(token)
+    })
+  })
 }
