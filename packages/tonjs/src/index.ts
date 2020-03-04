@@ -48,23 +48,43 @@ export type TonRoutes = {
 const ContentType = 'Content-Type'
 
 export function writeStatus(res: TonResponse, statusCode: number): void {
-  if (statusCode !== 200) {
-    res.writeStatus(`${statusCode} ${STATUS_CODES[statusCode]}`)
-  }
+  res.writeStatus(`${statusCode} ${STATUS_CODES[statusCode]}`)
 }
 
-export function writeHeaders(res: TonResponse, headers: TonHeaders = {}): void {
+export function writeHeaders(res: TonResponse, headers: TonHeaders): void {
   Object.keys(headers).forEach(key => res.writeHeader(key, headers[key]))
 }
 
-function toArrayBuffer(target: Buffer): ArrayBuffer {
-  return target.buffer.slice(
-    target.byteOffset,
-    target.byteOffset + target.byteLength
-  )
+export function sendEmpty(res: TonResponse, headers: TonHeaders = {}): void {
+  if (res.aborted) {
+    return
+  }
+
+  writeStatus(res, 204)
+  writeHeaders(res, headers)
+  res.aborted = true
+  res.end()
 }
 
-function pipeStream(res: TonResponse, data: TonStream): void {
+export function sendStream(
+  res: TonResponse,
+  statusCode: number,
+  data: TonStream,
+  headers: TonHeaders = {}
+): void {
+  if (res.aborted) {
+    return
+  }
+
+  if (statusCode !== 200) {
+    writeStatus(res, statusCode)
+  }
+
+  writeHeaders(res, {
+    [ContentType]: 'application/octet-stream',
+    ...headers
+  })
+
   res.onAborted(() => {
     res.aborted = true
     data.destroy()
@@ -72,6 +92,7 @@ function pipeStream(res: TonResponse, data: TonStream): void {
 
   data.on('error', err => {
     writeStatus(res, 500)
+    res.aborted = true
     res.end()
     data.destroy()
     throw err
@@ -79,13 +100,16 @@ function pipeStream(res: TonResponse, data: TonStream): void {
 
   data.on('end', res.end.bind(res))
   data.on('data', chunk => {
-    const arrayBuffer = toArrayBuffer(chunk)
+    const arrayBuffer = chunk.buffer.slice(
+      chunk.byteOffset,
+      chunk.byteOffset + chunk.byteLength
+    )
     const lastOffset = res.getWriteOffset()
-
     // first try
     const [firstTryOk, firstTryDone] = res.tryEnd(arrayBuffer, data.size)
 
     if (firstTryDone || firstTryOk) {
+      res.aborted = true
       data.destroy()
       return
     }
@@ -101,6 +125,7 @@ function pipeStream(res: TonResponse, data: TonStream): void {
       )
 
       if (done) {
+        res.aborted = true
         data.destroy()
         return ok
       }
@@ -114,64 +139,48 @@ function pipeStream(res: TonResponse, data: TonStream): void {
   })
 }
 
-export function redirect(
+export function sendText(
   res: TonResponse,
-  statusCode = 301,
-  location: string
-): void {
-  writeStatus(res, statusCode)
-  writeHeaders(res, { Location: location })
-  res.aborted = true
-  res.end()
-}
-
-export function send(
-  res: TonResponse,
-  statusCode = 200,
-  data?: TonData | void,
+  statusCode: number,
+  data: string,
   headers: TonHeaders = {}
 ): void {
   if (res.aborted) {
     return
   }
 
-  if (statusCode === 204 || typeof data === 'undefined' || data === null) {
-    writeStatus(res, 204)
-    writeHeaders(res, headers)
-    res.end()
-    res.aborted = true
-    return
-  }
-
-  if (data instanceof stream.Readable && readable(data)) {
+  if (statusCode !== 200) {
     writeStatus(res, statusCode)
-    writeHeaders(res, {
-      [ContentType]: 'application/octet-stream',
-      ...headers
-    })
-    pipeStream(res, data)
-    res.aborted = true
+  }
+
+  writeHeaders(res, {
+    [ContentType]: 'text/plain; charset=utf-8',
+    ...headers
+  })
+  res.aborted = true
+  res.end(data)
+}
+
+export function sendJSON(
+  res: TonResponse,
+  statusCode: number,
+  data: object,
+  headers: TonHeaders = {}
+): void {
+  if (res.aborted) {
     return
   }
 
-  if (typeof data === 'string') {
+  if (statusCode !== 200) {
     writeStatus(res, statusCode)
-    writeHeaders(res, {
-      [ContentType]: 'text/plain; charset=utf-8',
-      ...headers
-    })
-    res.end(data)
-    res.aborted = true
-    return
   }
 
-  writeStatus(res, statusCode)
   writeHeaders(res, {
     [ContentType]: 'application/json; charset=utf-8',
     ...headers
   })
-  res.end(JSON.stringify(data))
   res.aborted = true
+  res.end(JSON.stringify(data))
 }
 
 export function sendError(res: TonResponse, err: TonError): void {
@@ -180,9 +189,9 @@ export function sendError(res: TonResponse, err: TonError): void {
   const data = { message }
 
   if (process.env.NODE_ENV === 'production' && statusCode >= 500) {
-    send(res, 500, { message: STATUS_CODES[500] })
+    sendJSON(res, 500, { message: STATUS_CODES[500] })
   } else {
-    send(res, statusCode, data)
+    sendJSON(res, 500, data)
   }
 
   if (statusCode < 500) {
@@ -194,6 +203,48 @@ export function sendError(res: TonResponse, err: TonError): void {
   } else {
     console.error(err) // eslint-disable-line
   }
+}
+
+export function redirect(
+  res: TonResponse,
+  statusCode = 301,
+  location: string
+): void {
+  if (res.aborted) {
+    return
+  }
+  writeStatus(res, statusCode)
+  writeHeaders(res, { Location: location })
+  res.aborted = true
+  res.end()
+}
+
+export function send(
+  res: TonResponse,
+  statusCode: number,
+  data?: TonData | void,
+  headers: TonHeaders = {}
+): void {
+  if (res.aborted) {
+    return
+  }
+
+  if (statusCode === 204 || typeof data === 'undefined' || data === null) {
+    sendEmpty(res, headers)
+    return
+  }
+
+  if (data instanceof stream.Readable && readable(data)) {
+    sendStream(res, statusCode, data as TonStream, headers)
+    return
+  }
+
+  if (typeof data === 'string') {
+    sendText(res, statusCode, data as string, headers)
+    return
+  }
+
+  sendJSON(res, statusCode, data as object, headers)
 }
 
 export function createError(
