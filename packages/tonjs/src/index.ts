@@ -47,6 +47,23 @@ export type TonRoutes = {
 
 const ContentType = 'Content-Type'
 
+export function createError(
+  statusCode: number,
+  message: string,
+  original?: Error
+): TonError {
+  const err = new Error(message) as TonError
+  err.statusCode = statusCode
+  err.originalError = original
+  return err
+}
+
+export function checkIsNotAborted(res: TonResponse) {
+  if (res.aborted) {
+    throw createError(500, "Can't send anything after response was aborted")
+  }
+}
+
 export function writeStatus(res: TonResponse, statusCode: number): void {
   res.writeStatus(`${statusCode} ${STATUS_CODES[statusCode]}`)
 }
@@ -56,10 +73,7 @@ export function writeHeaders(res: TonResponse, headers: TonHeaders): void {
 }
 
 export function sendEmpty(res: TonResponse, headers: TonHeaders = {}): void {
-  if (res.aborted) {
-    return
-  }
-
+  checkIsNotAborted(res)
   writeStatus(res, 204)
   writeHeaders(res, headers)
   res.aborted = true
@@ -72,9 +86,7 @@ export function sendStream(
   data: TonStream,
   headers: TonHeaders = {}
 ): void {
-  if (res.aborted) {
-    return
-  }
+  checkIsNotAborted(res)
 
   if (statusCode !== 200) {
     writeStatus(res, statusCode)
@@ -145,9 +157,7 @@ export function sendText(
   data: string,
   headers: TonHeaders = {}
 ): void {
-  if (res.aborted) {
-    return
-  }
+  checkIsNotAborted(res)
 
   if (statusCode !== 200) {
     writeStatus(res, statusCode)
@@ -157,6 +167,7 @@ export function sendText(
     [ContentType]: 'text/plain; charset=utf-8',
     ...headers
   })
+
   res.aborted = true
   res.end(data)
 }
@@ -167,9 +178,7 @@ export function sendJSON(
   data: object,
   headers: TonHeaders = {}
 ): void {
-  if (res.aborted) {
-    return
-  }
+  checkIsNotAborted(res)
 
   if (statusCode !== 200) {
     writeStatus(res, statusCode)
@@ -179,6 +188,7 @@ export function sendJSON(
     [ContentType]: 'application/json; charset=utf-8',
     ...headers
   })
+
   res.aborted = true
   res.end(JSON.stringify(data))
 }
@@ -207,12 +217,10 @@ export function sendError(res: TonResponse, err: TonError): void {
 
 export function redirect(
   res: TonResponse,
-  statusCode = 301,
+  statusCode: 301 | 302,
   location: string
 ): void {
-  if (res.aborted) {
-    return
-  }
+  checkIsNotAborted(res)
   writeStatus(res, statusCode)
   writeHeaders(res, { Location: location })
   res.aborted = true
@@ -225,9 +233,7 @@ export function send(
   data?: TonData | void,
   headers: TonHeaders = {}
 ): void {
-  if (res.aborted) {
-    return
-  }
+  checkIsNotAborted(res)
 
   if (statusCode === 204 || typeof data === 'undefined' || data === null) {
     sendEmpty(res, headers)
@@ -247,36 +253,20 @@ export function send(
   sendJSON(res, statusCode, data as object, headers)
 }
 
-export function createError(
-  statusCode: number,
-  message: string,
-  original?: Error
-): TonError {
-  const err = new Error(message) as TonError
-  err.statusCode = statusCode
-  err.originalError = original
-  return err
-}
-
-export function buffer(
+export function readBuffer(
   res: TonResponse,
   { limit = '1mb' } = {}
 ): Promise<Buffer> {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     const limitSize = bytes.parse(limit)
     let data = Buffer.allocUnsafe(0)
 
     res.onData((chunk, isLast) => {
-      if (res.aborted) {
-        return
-      }
-
       data = Buffer.concat([data, Buffer.from(chunk)])
 
       if (data.length > limitSize) {
         const statusCode = 413
-        sendError(res, createError(statusCode, STATUS_CODES[statusCode]))
-        res.aborted = true
+        reject(createError(statusCode, STATUS_CODES[statusCode]))
         return
       }
 
@@ -287,19 +277,19 @@ export function buffer(
   })
 }
 
-export async function text(
+export async function readText(
   res: TonResponse,
   { limit = '1mb', encoding = 'utf-8' } = {}
 ): Promise<string> {
-  const body = await buffer(res, { limit })
+  const body = await readBuffer(res, { limit })
   return body.toString(encoding)
 }
 
-export async function json(
+export async function readJSON(
   res: TonResponse,
   { limit = '1mb', encoding = 'utf-8' } = {}
 ): Promise<any> {
-  const body = await text(res, { limit, encoding })
+  const body = await readText(res, { limit, encoding })
   try {
     return JSON.parse(body)
   } catch (err) {
@@ -315,13 +305,7 @@ export function handler(fn: TonHandler) {
     })
 
     try {
-      const result = await fn(req, res)
-
-      if (res.aborted) {
-        return
-      }
-
-      send(res, 200, result)
+      send(res, 200, await fn(req, res))
     } catch (err) {
       sendError(res, createError(500, STATUS_CODES[500], err))
     }
@@ -344,7 +328,7 @@ export function registerGracefulShutdown(socket: TonListenSocket) {
     if (!hasBeenShutdown) {
       hasBeenShutdown = true
       // eslint-disable-next-line
-      console.info('gracefully shutting down. please wait...')
+      console.info('Gracefully shutting down. Please wait...')
       uWS.us_listen_socket_close(socket)
     }
   }
