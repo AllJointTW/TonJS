@@ -2,7 +2,6 @@ import { STATUS_CODES } from 'http'
 import stream from 'stream'
 import uWS from 'uWebSockets.js'
 import bytes from 'bytes'
-import { readable } from 'is-stream'
 
 export type TonApp = uWS.TemplatedApp
 export type TonAppOptions = {
@@ -24,8 +23,8 @@ export type TonHandler = (
 ) => TonData | void | Promise<TonData | void>
 export type TonError = Error & {
   statusCode: number
-  status: number
-  originalError: Error
+  original?: Error
+  fields?: any
 }
 export type TonMethods =
   | 'GET'
@@ -44,28 +43,49 @@ export type TonListenSocket = uWS.us_listen_socket // eslint-disable-line
 export type TonRoutes = {
   [patter: string]: { methods: TonMethods; handler: TonHandler }
 }
+export const TonStatusCodes = STATUS_CODES
 
 const ContentType = 'Content-Type'
+const TonStatusCodesWithMessage = Object.keys(TonStatusCodes).reduce(
+  (pre, curr) => ({
+    ...pre,
+    [curr]: `${curr} ${TonStatusCodes[curr]}`
+  }),
+  {}
+)
 
-export function createError(
+export function create4xxError(
+  statusCode: number,
+  message: string,
+  fields?: any
+): TonError {
+  const err = new Error(message) as TonError
+  err.statusCode = statusCode
+  err.fields = fields
+  return err
+}
+
+export function create5xxError(
   statusCode: number,
   message: string,
   original?: Error
 ): TonError {
   const err = new Error(message) as TonError
   err.statusCode = statusCode
-  err.originalError = original
+  err.original = original
   return err
 }
 
 export function checkIsNotAborted(res: TonResponse) {
   if (res.aborted) {
-    throw createError(500, "Can't send anything after response was aborted")
+    throw create5xxError(500, "Can't send anything after response was aborted")
   }
 }
 
 export function writeStatus(res: TonResponse, statusCode: number): void {
-  res.writeStatus(`${statusCode} ${STATUS_CODES[statusCode]}`)
+  res.writeStatus(
+    TonStatusCodesWithMessage[statusCode] || TonStatusCodesWithMessage[500]
+  )
 }
 
 export function writeHeaders(res: TonResponse, headers: TonHeaders): void {
@@ -193,25 +213,27 @@ export function sendJSON(
   res.end(JSON.stringify(data))
 }
 
-export function sendError(res: TonResponse, err: TonError): void {
-  const statusCode = err.statusCode || err.status || 500
-  const message = err.message || STATUS_CODES[statusCode] || STATUS_CODES[500]
+export function sendError(res: TonResponse, err: TonError | Error): void {
+  const error = err as TonError
+  const statusCode = error.statusCode || 500
+  const message =
+    error.message || TonStatusCodes[statusCode] || TonStatusCodes[500]
   const data = { message }
 
   if (process.env.NODE_ENV === 'production' && statusCode >= 500) {
-    sendJSON(res, 500, { message: STATUS_CODES[500] })
+    sendJSON(res, statusCode, { message: TonStatusCodes[statusCode] })
   } else {
-    sendJSON(res, 500, data)
+    sendJSON(res, statusCode, data)
   }
 
   if (statusCode < 500) {
     return
   }
 
-  if (err.originalError && err.originalError instanceof Error) {
-    console.error(err.originalError) // eslint-disable-line
+  if (error.original) {
+    console.error(error.original) // eslint-disable-line
   } else {
-    console.error(err) // eslint-disable-line
+    console.error(error) // eslint-disable-line
   }
 }
 
@@ -240,25 +262,32 @@ export function send(
     return
   }
 
-  if (data instanceof stream.Readable && readable(data)) {
-    sendStream(res, statusCode, data as TonStream, headers)
+  if (typeof data === 'string') {
+    sendText(res, statusCode, data as string, headers)
     return
   }
 
-  if (typeof data === 'string') {
-    sendText(res, statusCode, data as string, headers)
+  if (data instanceof stream.Readable) {
+    sendStream(res, statusCode, data as TonStream, headers)
     return
   }
 
   sendJSON(res, statusCode, data as object, headers)
 }
 
+const defaultLimitSize = bytes.parse('1mb')
+
 export function readBuffer(
   res: TonResponse,
   { limit = '1mb' } = {}
 ): Promise<Buffer> {
   return new Promise((resolve, reject) => {
-    const limitSize = bytes.parse(limit)
+    let limitSize = defaultLimitSize
+
+    if (limit !== '1mb') {
+      limitSize = bytes.parse(limit)
+    }
+
     let data = Buffer.allocUnsafe(0)
 
     res.onData((chunk, isLast) => {
@@ -266,7 +295,7 @@ export function readBuffer(
 
       if (data.length > limitSize) {
         const statusCode = 413
-        reject(createError(statusCode, STATUS_CODES[statusCode]))
+        reject(create4xxError(statusCode, TonStatusCodes[statusCode]))
         return
       }
 
@@ -293,7 +322,7 @@ export async function readJSON(
   try {
     return JSON.parse(body)
   } catch (err) {
-    throw createError(400, 'Invalid JSON', err)
+    throw create4xxError(400, 'Invalid JSON', err)
   }
 }
 
@@ -307,7 +336,7 @@ export function handler(fn: TonHandler) {
     try {
       send(res, 200, await fn(req, res))
     } catch (err) {
-      sendError(res, createError(500, STATUS_CODES[500], err))
+      sendError(res, create4xxError(500, TonStatusCodes[500], err))
     }
   }
 }

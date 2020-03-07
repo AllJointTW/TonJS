@@ -1,4 +1,3 @@
-import { STATUS_CODES } from 'http'
 import * as ton from './index'
 
 let mockRes: ton.TonResponse
@@ -55,7 +54,7 @@ describe('readBuffer', () => {
     }
 
     await expect(ton.readBuffer(mockRes, { limit: '0b' })).rejects.toThrow(
-      ton.createError(413, STATUS_CODES[413])
+      ton.create4xxError(413, ton.TonStatusCodes[413])
     )
   })
 })
@@ -100,7 +99,7 @@ describe('readText', () => {
     }
 
     await expect(ton.readText(mockRes, { limit: '0b' })).rejects.toThrow(
-      ton.createError(413, STATUS_CODES[413])
+      ton.create4xxError(413, ton.TonStatusCodes[413])
     )
   })
 })
@@ -145,7 +144,7 @@ describe('readJSON', () => {
     }
 
     await expect(ton.readJSON(mockRes, { limit: '0b' })).rejects.toThrow(
-      ton.createError(413, STATUS_CODES[413])
+      ton.create4xxError(413, ton.TonStatusCodes[413])
     )
   })
 
@@ -156,7 +155,7 @@ describe('readJSON', () => {
     }
 
     await expect(ton.readJSON(mockRes)).rejects.toThrow(
-      ton.createError(400, 'Invalid JSON')
+      ton.create4xxError(400, 'Invalid JSON')
     )
   })
 })
