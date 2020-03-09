@@ -3,18 +3,18 @@
 
 
 "@alljoint-next/eslint-config-typescript@^0.3.0":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@alljoint-next/eslint-config-typescript/-/eslint-config-typescript-0.3.1.tgz#c69d3123d5b96c013741da1652bb4610843c7755"
-  integrity sha512-TXVb4yS9Fuqy44LWqwcrgCR+Kt2GxGwRzKjeYCc0er3wL99BJT4xtBfK3jt37x+/2+kOhBnfY6fqbykxHQLW4g==
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/@alljoint-next/eslint-config-typescript/-/eslint-config-typescript-0.3.2.tgz#a341c5ffd5ecbe96bfe72dfc854e77fbc0fecc61"
+  integrity sha512-d/4E4KIfeF8++RigSLEr4Sw25eK1C5zffHMQXn2kW8CXdxjP4/n1Toq26MGQWQvRP6y6oAteyDjJWLwl7e+1NA==
   dependencies:
-    "@alljoint-next/eslint-config" "0.3.0"
+    "@alljoint-next/eslint-config" "0.3.1"
     "@typescript-eslint/eslint-plugin" "^2.19.2"
     "@typescript-eslint/parser" "^2.19.2"
 
-"@alljoint-next/eslint-config@0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@alljoint-next/eslint-config/-/eslint-config-0.3.0.tgz#feb1df47c4176aa1817246ccc907eedce123c70f"
-  integrity sha512-pqKOwskiSuu9TU0yZfmKvGVI5ktFs8R7utH0Qt367afDlO9Qh6AxTP0Cgj2DZaeK2GxUG74rNe36VDBtJamGQQ==
+"@alljoint-next/eslint-config@0.3.1":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@alljoint-next/eslint-config/-/eslint-config-0.3.1.tgz#d1ddc89383817de7901c581ed9854a3399534eb1"
+  integrity sha512-d47k+gto0roxyOoaHmSa9XryjI8O7uAgAVGgVe1t1hjPkrg++hhrXg+MY4ynXfj+WOhBdkgnp5F/16lBoYIm0w==
   dependencies:
     eslint-config-airbnb-base "^14.0.0"
     eslint-config-prettier "^6.10.0"
@@ -23,9 +23,9 @@
     eslint-plugin-prettier "^3.1.2"
 
 "@alljoint-next/ts-config@^0.1.2":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@alljoint-next/ts-config/-/ts-config-0.1.4.tgz#36b292ac38cd7bc88ba07922ab640b63987d14cf"
-  integrity sha512-Ibx37bIX1Yxr7gPTaCN2rxxqHPHD0/4Vjjm786sMayK7CGs4WeOKMCjpI6vBI2n8MXdnJCEHOENAYKu1lB8mcQ==
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@alljoint-next/ts-config/-/ts-config-0.1.5.tgz#fd46c801d25664e2dfcec78077e1ff3271402896"
+  integrity sha512-F6FnQgi8IeOsuh+XZOrDlqR+dpqHGOSkYvtx6wFeYy4gsYrk8N3MIQmojdcmaos3XvMxBPWxNZw5URv5kV+pDg==
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.8.3":
   version "7.8.3"

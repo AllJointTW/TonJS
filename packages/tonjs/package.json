@@ -12,7 +12,6 @@
   "author": "TZU-YEN, CHANG <try_love_tom@alljoint.tw>",
   "license": "GPL-3.0",
   "scripts": {
-    "dev": "nodemon --watch '{src,example}/**/*.ts' --ignore '{src,example}/**/*.{spec,test}.ts' --exec 'ts-node' src/bin.ts",
     "build": "tsc"
   },
   "dependencies": {
