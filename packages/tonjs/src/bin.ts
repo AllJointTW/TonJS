@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import path from 'path'
 import {
   createApp,
@@ -69,7 +70,7 @@ async function main() {
       await import(path.resolve(process.cwd(), entry))
     ).default
 
-    console.info('\nroutes:') // eslint-disable-line
+    console.info('\nroutes:')
     if (typeof endpoints === 'object' && endpoints !== null) {
       Object.keys(endpoints as TonRoutes).forEach(key => {
         const pattern = key
@@ -78,24 +79,23 @@ async function main() {
         if (handlerName === 'handler') {
           handlerName = 'anonymous'
         }
-        console.info(`  ${key} => ${handlerName}()`) // eslint-disable-line
+        console.info(`  ${key} => ${handlerName}()`)
         route(app, methods, pattern, handler)
       })
     } else {
       const { name = 'anonymous' } = endpoints as TonHandler
-      console.info(`  * => ${name}()`) // eslint-disable-line
-      route(app, 'ANY', '*', endpoints as TonHandler)
+      console.info(`  /* => ${name}()`)
+      route(app, 'any', '/*', endpoints as TonHandler)
     }
 
     const token: TonListenSocket = await listen(app, argv.host, argv.port)
     registerGracefulShutdown(token)
-    // eslint-disable-next-line
     console.info(
       `\nyou raise me up, to listen on http://${argv.host}:${argv.port}\n`
     )
   } catch (err) {
-    console.info(`\nfailed to listen on ${argv.host}:${argv.port}\n`) // eslint-disable-line
-    console.error(err) // eslint-disable-line
+    console.info(`\nfailed to listen on ${argv.host}:${argv.port}\n`)
+    console.error(err)
   }
 }
 

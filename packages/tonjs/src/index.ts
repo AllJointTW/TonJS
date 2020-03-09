@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { STATUS_CODES } from 'http'
 import stream from 'stream'
 import uWS from 'uWebSockets.js'
@@ -13,7 +14,10 @@ export type TonAppOptions = {
   preferLowMemoryUsage?: boolean
 }
 export type TonRequest = uWS.HttpRequest
-export type TonResponse = uWS.HttpResponse & { aborted: boolean }
+export type TonResponse = uWS.HttpResponse & {
+  statusCode?: number
+  aborted: boolean
+}
 export type TonStream = stream.Readable & { size?: number }
 export type TonData = string | number | object | TonStream
 export type TonHeaders = { [key: string]: string }
@@ -27,19 +31,20 @@ export type TonError = Error & {
   fields?: any
 }
 export type TonMethods =
-  | 'GET'
-  | 'POST'
-  | 'OPTIONS'
-  | 'DEL'
-  | 'PATCH'
-  | 'PUT'
-  | 'HEAD'
-  | 'CONNECT'
-  | 'TRACE'
-  | 'ANY'
-  | 'WS'
-  | 'PUBLISH'
-export type TonListenSocket = uWS.us_listen_socket // eslint-disable-line
+  | 'get'
+  | 'post'
+  | 'options'
+  | 'del'
+  | 'path'
+  | 'put'
+  | 'head'
+  | 'connect'
+  | 'trace'
+  | 'any'
+  | 'ws'
+  | 'publish'
+// eslint-disable-next-line camelcase, @typescript-eslint/camelcase
+export type TonListenSocket = uWS.us_listen_socket
 export type TonRoutes = {
   [patter: string]: { methods: TonMethods; handler: TonHandler }
 }
@@ -53,6 +58,7 @@ const TonStatusCodesWithMessage = Object.keys(TonStatusCodes).reduce(
   }),
   {}
 )
+const AbortedMessage = "Can't send anything after response was aborted"
 
 export function create4xxError(
   statusCode: number,
@@ -78,11 +84,12 @@ export function create5xxError(
 
 export function checkIsNotAborted(res: TonResponse) {
   if (res.aborted) {
-    throw create5xxError(500, "Can't send anything after response was aborted")
+    throw create5xxError(500, AbortedMessage)
   }
 }
 
 export function writeStatus(res: TonResponse, statusCode: number): void {
+  res.statusCode = statusCode || 500
   res.writeStatus(
     TonStatusCodesWithMessage[statusCode] || TonStatusCodesWithMessage[500]
   )
@@ -98,77 +105,6 @@ export function sendEmpty(res: TonResponse, headers: TonHeaders = {}): void {
   writeHeaders(res, headers)
   res.aborted = true
   res.end()
-}
-
-export function sendStream(
-  res: TonResponse,
-  statusCode: number,
-  data: TonStream,
-  headers: TonHeaders = {}
-): void {
-  checkIsNotAborted(res)
-
-  if (statusCode !== 200) {
-    writeStatus(res, statusCode)
-  }
-
-  writeHeaders(res, {
-    [ContentType]: 'application/octet-stream',
-    ...headers
-  })
-
-  res.onAborted(() => {
-    res.aborted = true
-    data.destroy()
-  })
-
-  data.on('error', err => {
-    writeStatus(res, 500)
-    res.aborted = true
-    res.end()
-    data.destroy()
-    throw err
-  })
-
-  data.on('end', res.end.bind(res))
-  data.on('data', chunk => {
-    const arrayBuffer = chunk.buffer.slice(
-      chunk.byteOffset,
-      chunk.byteOffset + chunk.byteLength
-    )
-    const lastOffset = res.getWriteOffset()
-    // first try
-    const [firstTryOk, firstTryDone] = res.tryEnd(arrayBuffer, data.size)
-
-    if (firstTryDone || firstTryOk) {
-      res.aborted = true
-      data.destroy()
-      return
-    }
-
-    // pause because backpressure
-    data.pause()
-
-    // register async handlers for drainage
-    res.onWritable(offset => {
-      const [ok, done] = res.tryEnd(
-        arrayBuffer.slice(offset - lastOffset),
-        data.size
-      )
-
-      if (done) {
-        res.aborted = true
-        data.destroy()
-        return ok
-      }
-
-      if (ok) {
-        data.resume()
-      }
-
-      return ok
-    })
-  })
 }
 
 export function sendText(
@@ -214,6 +150,13 @@ export function sendJSON(
 }
 
 export function sendError(res: TonResponse, err: TonError | Error): void {
+  try {
+    checkIsNotAborted(res)
+  } catch (abortedError) {
+    console.error(abortedError)
+    return
+  }
+
   const error = err as TonError
   const statusCode = error.statusCode || 500
   const message =
@@ -231,10 +174,85 @@ export function sendError(res: TonResponse, err: TonError | Error): void {
   }
 
   if (error.original) {
-    console.error(error.original) // eslint-disable-line
+    console.error(error.original)
   } else {
-    console.error(error) // eslint-disable-line
+    console.error(error)
   }
+}
+
+export function sendStream(
+  res: TonResponse,
+  statusCode: number,
+  data: TonStream,
+  headers: TonHeaders = {}
+): void {
+  checkIsNotAborted(res)
+
+  if (statusCode !== 200) {
+    writeStatus(res, statusCode)
+  }
+
+  writeHeaders(res, {
+    [ContentType]: 'application/octet-stream',
+    ...headers
+  })
+
+  res.onAborted(() => {
+    res.aborted = true
+    data.destroy()
+  })
+
+  data.on('error', err => {
+    sendError(res, err)
+    data.destroy()
+  })
+
+  data.on('end', () => {
+    res.aborted = true
+    res.end()
+  })
+
+  data.on('data', chunk => {
+    const arrayBuffer = chunk.buffer.slice(
+      chunk.byteOffset,
+      chunk.byteOffset + chunk.byteLength
+    )
+    const lastOffset = res.getWriteOffset()
+    // first try
+    const [firstTryOk, firstTryDone] = res.tryEnd(arrayBuffer, data.size)
+
+    if (firstTryDone) {
+      data.destroy()
+      return
+    }
+
+    if (firstTryOk) {
+      return
+    }
+
+    // pause because backpressure
+    data.pause()
+
+    // register async handlers for drainage
+    res.onWritable(offset => {
+      const [ok, done] = res.tryEnd(
+        arrayBuffer.slice(offset - lastOffset),
+        data.size
+      )
+
+      if (done) {
+        res.aborted = true
+        data.destroy()
+        return ok
+      }
+
+      if (ok) {
+        data.resume()
+      }
+
+      return ok
+    })
+  })
 }
 
 export function redirect(
@@ -334,7 +352,13 @@ export function handler(fn: TonHandler) {
     })
 
     try {
-      send(res, 200, await fn(req, res))
+      const result = await fn(req, res)
+
+      if (result === undefined) {
+        return
+      }
+
+      send(res, res.statusCode || 200, result)
     } catch (err) {
       sendError(res, create4xxError(500, TonStatusCodes[500], err))
     }
@@ -347,16 +371,15 @@ export function route(
   pattern: string,
   routeHandler: TonHandler
 ) {
-  app[methods.toLocaleLowerCase()](pattern, handler(routeHandler))
+  app[methods](pattern, handler(routeHandler))
 }
 
 export function registerGracefulShutdown(socket: TonListenSocket) {
   let hasBeenShutdown = false
 
-  const wrapper = () => {
+  function wrapper() {
     if (!hasBeenShutdown) {
       hasBeenShutdown = true
-      // eslint-disable-next-line
       console.info('Gracefully shutting down. Please wait...')
       uWS.us_listen_socket_close(socket)
     }
@@ -369,13 +392,15 @@ export function registerGracefulShutdown(socket: TonListenSocket) {
 
 export function createApp(options: TonAppOptions = {}): TonApp {
   if (options.ssl) {
-    return uWS.SSLApp({
-      key_file_name: options.key, // eslint-disable-line
-      cert_file_name: options.cert, // eslint-disable-line
+    /* eslint-disable @typescript-eslint/camelcase */
+    uWS.SSLApp({
+      key_file_name: options.key,
+      cert_file_name: options.cert,
       passphrase: options.passphrase,
-      dh_params_file_name: options.dhParams, // eslint-disable-line
-      ssl_prefer_low_memory_usage: options.preferLowMemoryUsage // eslint-disable-line
+      dh_params_file_name: options.dhParams,
+      ssl_prefer_low_memory_usage: options.preferLowMemoryUsage
     })
+    /* eslint-enable @typescript-eslint/camelcase */
   }
   return uWS.App()
 }
@@ -390,6 +415,7 @@ export function listen(
       if (!token) {
         return reject()
       }
+
       return resolve(token)
     })
   })

@@ -1,3 +1,4 @@
+import { Readable } from 'stream'
 import * as ton from './index'
 
 let mockRes: ton.TonResponse
@@ -42,6 +43,15 @@ describe('writeStatus', () => {
     expect(mockRes.writeStatus).toHaveBeenCalledTimes(1)
     expect(mockRes.writeStatus).toHaveBeenCalledWith(
       `${statusCode} ${ton.TonStatusCodes[statusCode]}`
+    )
+  })
+
+  it('should write status 500, if statusCode is empty', () => {
+    ton.writeStatus(mockRes, 0)
+
+    expect(mockRes.writeStatus).toHaveBeenCalledTimes(1)
+    expect(mockRes.writeStatus).toHaveBeenCalledWith(
+      `${500} ${ton.TonStatusCodes[500]}`
     )
   })
 
@@ -150,8 +160,6 @@ describe('sendText', () => {
   })
 })
 
-// Todo: describe sendStream
-
 describe('sendJSON', () => {
   it('should not send anything after response was aborted', () => {
     mockRes.aborted = true
@@ -205,7 +213,8 @@ describe('sendJSON', () => {
 })
 
 describe('sendError', () => {
-  const originalConsoleError = console.error // eslint-disable-line
+  // eslint-disable-next-line no-console
+  const originalConsoleError = console.error
   const originalNodeEnv = process.env.NODE_ENV
   const message = "Uncaught TypeError: Cannot read property 'c' of undefined"
   const errorNormal = new Error(message)
@@ -213,12 +222,26 @@ describe('sendError', () => {
   const error500 = ton.create5xxError(500, ton.TonStatusCodes[500], errorNormal)
 
   beforeEach(() => {
-    console.error = jest.fn() // eslint-disable-line
+    // eslint-disable-next-line no-console
+    console.error = jest.fn()
   })
 
   afterEach(() => {
     process.env.NODE_ENV = originalNodeEnv
-    console.error = originalConsoleError // eslint-disable-line
+    // eslint-disable-next-line no-console
+    console.error = originalConsoleError
+  })
+
+  it('should not send anything, if response is aborted', () => {
+    mockRes.aborted = true
+    ton.sendError(mockRes, errorNormal)
+
+    // eslint-disable-next-line no-console
+    expect(console.error).toHaveBeenCalledTimes(1)
+    // eslint-disable-next-line no-console
+    expect(console.error).toHaveBeenCalledWith(
+      ton.create5xxError(500, "Can't send anything after response was aborted")
+    )
   })
 
   it('should send normal error with 500 statusCode', () => {
@@ -239,8 +262,10 @@ describe('sendError', () => {
     expect(mockRes.end).toHaveBeenCalledTimes(1)
     expect(mockRes.end).toHaveBeenCalledWith(`{"message":"${message}"}`)
 
-    expect(console.error).toHaveBeenCalledTimes(1) // eslint-disable-line
-    expect(console.error).toHaveBeenCalledWith(errorNormal) // eslint-disable-line
+    // eslint-disable-next-line no-console
+    expect(console.error).toHaveBeenCalledTimes(1)
+    // eslint-disable-next-line no-console
+    expect(console.error).toHaveBeenCalledWith(errorNormal)
   })
 
   it('should send 500 error and console.error message of normal error', () => {
@@ -263,8 +288,10 @@ describe('sendError', () => {
       `{"message":"${ton.TonStatusCodes[500]}"}`
     )
 
-    expect(console.error).toHaveBeenCalledTimes(1) // eslint-disable-line
-    expect(console.error).toHaveBeenCalledWith(errorNormal) // eslint-disable-line
+    // eslint-disable-next-line no-console
+    expect(console.error).toHaveBeenCalledTimes(1)
+    // eslint-disable-next-line no-console
+    expect(console.error).toHaveBeenCalledWith(errorNormal)
   })
 
   it('should send 400 error and should not console.error it', () => {
@@ -287,7 +314,8 @@ describe('sendError', () => {
       `{"message":"${ton.TonStatusCodes[400]}"}`
     )
 
-    expect(console.error).toHaveBeenCalledTimes(0) // eslint-disable-line
+    // eslint-disable-next-line no-console
+    expect(console.error).toHaveBeenCalledTimes(0)
   })
 
   it(`
@@ -313,8 +341,10 @@ if process.env.NODE_ENV equal to 'production'`, () => {
       `{"message":"${ton.TonStatusCodes[500]}"}`
     )
 
-    expect(console.error).toHaveBeenCalledTimes(1) // eslint-disable-line
-    expect(console.error).toHaveBeenCalledWith(errorNormal) // eslint-disable-line
+    // eslint-disable-next-line no-console
+    expect(console.error).toHaveBeenCalledTimes(1)
+    // eslint-disable-next-line no-console
+    expect(console.error).toHaveBeenCalledWith(errorNormal)
   })
 
   it(`should send message of TonStatusCode[statusCode], \
@@ -340,8 +370,10 @@ if message is empty`, () => {
       `{"message":"${ton.TonStatusCodes[502]}"}`
     )
 
-    expect(console.error).toHaveBeenCalledTimes(1) // eslint-disable-line
-    expect(console.error).toHaveBeenCalledWith(errorEmpty) // eslint-disable-line
+    // eslint-disable-next-line no-console
+    expect(console.error).toHaveBeenCalledTimes(1)
+    // eslint-disable-next-line no-console
+    expect(console.error).toHaveBeenCalledWith(errorEmpty)
   })
 
   it(`should send message of TonStatusCodes[500], if message is empty`, () => {
@@ -366,8 +398,180 @@ if message is empty`, () => {
       `{"message":"${ton.TonStatusCodes[500]}"}`
     )
 
-    expect(console.error).toHaveBeenCalledTimes(1) // eslint-disable-line
-    expect(console.error).toHaveBeenCalledWith(errorEmpty) // eslint-disable-line
+    // eslint-disable-next-line no-console
+    expect(console.error).toHaveBeenCalledTimes(1)
+    // eslint-disable-next-line no-console
+    expect(console.error).toHaveBeenCalledWith(errorEmpty)
+  })
+})
+
+describe('sendStream', () => {
+  let mockStream: ton.TonStream = new Readable()
+  const buffer = Buffer.from('asdf')
+
+  beforeEach(() => {
+    mockStream = new Readable()
+    // eslint-disable-next-line @typescript-eslint/no-empty-function, no-underscore-dangle
+    mockStream._read = function read() {}
+    mockStream.destroy = jest.fn()
+    mockStream.resume = jest.fn()
+    mockStream.pause = jest.fn()
+    mockStream.size = buffer.length
+  })
+
+  it('should bypass send status 200', () => {
+    ton.sendStream(mockRes, 200, mockStream)
+
+    expect(mockRes.writeStatus).toHaveBeenCalledTimes(0)
+
+    expect(mockRes.writeHeader).toHaveBeenCalledTimes(1)
+    expect(mockRes.writeHeader).toHaveBeenNthCalledWith(
+      1,
+      'Content-Type',
+      'application/octet-stream'
+    )
+  })
+
+  it('should destroy stream, if res is on Aborted', () => {
+    mockRes.onAborted = jest.fn(fn => {
+      fn()
+      return mockRes
+    })
+    ton.sendStream(mockRes, 201, mockStream)
+    expect(mockStream.destroy).toHaveBeenCalledTimes(1)
+    expect(mockRes.aborted).toBe(true)
+  })
+
+  it('should destroy stream, if stream is on error', () => {
+    ton.sendStream(mockRes, 201, mockStream)
+    mockStream.emit('error', ton.create4xxError(400, 'mock error'))
+    expect(mockStream.destroy).toHaveBeenCalledTimes(1)
+    expect(mockRes.aborted).toBe(true)
+  })
+
+  it('should end response, if stream is end', () => {
+    mockRes.tryEnd = jest.fn(() => [false, true])
+    ton.sendStream(mockRes, 201, mockStream)
+
+    mockStream.emit('end')
+    expect(mockRes.end).toHaveBeenCalledTimes(1)
+    expect(mockRes.aborted).toBe(true)
+  })
+
+  it('should destroy the stream, if done in first try', () => {
+    mockRes.tryEnd = jest.fn((arrayBuffer: ArrayBuffer, size) => {
+      expect(Buffer.from(arrayBuffer).toString()).toBe(buffer.toString())
+      expect(size).toBe(buffer.length)
+      return [false, true]
+    })
+    ton.sendStream(mockRes, 201, mockStream)
+
+    mockStream.emit('data', buffer)
+    expect(mockStream.destroy).toHaveBeenCalledTimes(1)
+  })
+
+  it('should not pause or destroy stream, if ok in first try', () => {
+    mockRes.tryEnd = jest.fn((arrayBuffer: ArrayBuffer, size) => {
+      expect(Buffer.from(arrayBuffer).toString()).toBe(buffer.toString())
+      expect(size).toBe(buffer.length)
+      return [true, false]
+    })
+    ton.sendStream(mockRes, 201, mockStream)
+
+    mockStream.emit('data', buffer)
+    expect(mockStream.pause).toHaveBeenCalledTimes(0)
+    expect(mockStream.destroy).toHaveBeenCalledTimes(0)
+  })
+
+  it('should pause stream, if is not ok or done in first try', () => {
+    mockRes.tryEnd = jest.fn((arrayBuffer: ArrayBuffer, size) => {
+      expect(Buffer.from(arrayBuffer).toString()).toBe(buffer.toString())
+      expect(size).toBe(buffer.length)
+      return [false, false]
+    })
+    ton.sendStream(mockRes, 201, mockStream)
+
+    mockStream.emit('data', buffer)
+    expect(mockStream.pause).toHaveBeenCalledTimes(1)
+  })
+
+  it('should destroy stream, if is done in onWritable try', () => {
+    const length = 2
+    mockRes.tryEnd = jest.fn((arrayBuffer: ArrayBuffer, size) => {
+      expect(Buffer.from(arrayBuffer).toString()).toBe(buffer.toString())
+      expect(size).toBe(buffer.length)
+      return [false, false]
+    })
+    mockRes.getWriteOffset = jest.fn(() => length)
+    mockRes.onWritable = jest.fn(fn => {
+      mockRes.tryEnd = jest.fn((arrayBuffer: ArrayBuffer, size) => {
+        expect(Buffer.from(arrayBuffer).toString()).toBe(
+          buffer.toString().slice(length)
+        )
+        expect(size).toBe(buffer.length)
+        return [false, true]
+      })
+      expect(fn(0)).toBe(false) // ok
+      return mockRes
+    })
+    ton.sendStream(mockRes, 201, mockStream)
+
+    mockStream.emit('data', buffer)
+    expect(mockStream.pause).toHaveBeenCalledTimes(1)
+    expect(mockRes.aborted).toBe(true)
+    expect(mockStream.destroy).toHaveBeenCalledTimes(1)
+  })
+
+  it('should resume stream, if is not done but ok in onWritable try', () => {
+    const length = 2
+    mockRes.tryEnd = jest.fn((arrayBuffer: ArrayBuffer, size) => {
+      expect(Buffer.from(arrayBuffer).toString()).toBe(buffer.toString())
+      expect(size).toBe(buffer.length)
+      return [false, false]
+    })
+    mockRes.getWriteOffset = jest.fn(() => length)
+    mockRes.onWritable = jest.fn(fn => {
+      mockRes.tryEnd = jest.fn((arrayBuffer: ArrayBuffer, size) => {
+        expect(Buffer.from(arrayBuffer).toString()).toBe(
+          buffer.toString().slice(length)
+        )
+        expect(size).toBe(buffer.length)
+        return [true, false]
+      })
+      expect(fn(0)).toBe(true) // ok
+      return mockRes
+    })
+    ton.sendStream(mockRes, 201, mockStream)
+
+    mockStream.emit('data', buffer)
+    expect(mockStream.resume).toHaveBeenCalledTimes(2)
+  })
+
+  it(`should resume or destroy stream, \
+if is not done and ok in onWritable try`, () => {
+    const length = 2
+    mockRes.tryEnd = jest.fn((arrayBuffer: ArrayBuffer, size) => {
+      expect(Buffer.from(arrayBuffer).toString()).toBe(buffer.toString())
+      expect(size).toBe(buffer.length)
+      return [false, false]
+    })
+    mockRes.getWriteOffset = jest.fn(() => length)
+    mockRes.onWritable = jest.fn(fn => {
+      mockRes.tryEnd = jest.fn((arrayBuffer: ArrayBuffer, size) => {
+        expect(Buffer.from(arrayBuffer).toString()).toBe(
+          buffer.toString().slice(length)
+        )
+        expect(size).toBe(buffer.length)
+        return [false, false]
+      })
+      expect(fn(0)).toBe(false) // ok
+      return mockRes
+    })
+    ton.sendStream(mockRes, 201, mockStream)
+
+    mockStream.emit('data', buffer)
+    expect(mockStream.destroy).toHaveBeenCalledTimes(0)
+    expect(mockStream.resume).toHaveBeenCalledTimes(1)
   })
 })
 
@@ -453,9 +657,27 @@ describe('send', () => {
     expect(mockRes.end).toHaveBeenCalledWith('ton')
   })
 
-  // TODO: test should send stream, if data is stream
+  it('should send stream, if data is readable stream', () => {
+    const mockStream: ton.TonStream = new Readable()
+    const buffer = Buffer.from('asdf')
+    // eslint-disable-next-line no-underscore-dangle, @typescript-eslint/no-empty-function
+    mockStream._read = function read() {}
+    mockStream.destroy = jest.fn()
+    mockStream.resume = jest.fn()
+    mockStream.pause = jest.fn()
+    mockStream.size = buffer.length
+    mockRes.tryEnd = jest.fn((arrayBuffer: ArrayBuffer, size) => {
+      expect(Buffer.from(arrayBuffer).toString()).toBe(buffer.toString())
+      expect(size).toBe(buffer.length)
+      return [false, true]
+    })
+    ton.send(mockRes, 201, mockStream)
 
-  it('should send JSON , if data is string', () => {
+    mockStream.emit('data', buffer)
+    expect(mockStream.destroy).toHaveBeenCalledTimes(1)
+  })
+
+  it('should send JSON , if data is object', () => {
     ton.send(mockRes, 200, { key: 'value' })
 
     expect(mockRes.writeHeader).toHaveBeenCalledTimes(1)
