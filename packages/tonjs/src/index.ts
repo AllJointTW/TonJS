@@ -360,7 +360,7 @@ export function handler(fn: TonHandler) {
 
       send(res, res.statusCode || 200, result)
     } catch (err) {
-      sendError(res, create4xxError(500, TonStatusCodes[500], err))
+      sendError(res, create5xxError(500, TonStatusCodes[500], err))
     }
   }
 }
