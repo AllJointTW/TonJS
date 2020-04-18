@@ -1,6 +1,22 @@
 {
   "name": "@alljoint-next/tonjs",
   "version": "0.0.0",
+  "keywords": [
+    "http",
+    "benchmark",
+    "fast",
+    "lightweight",
+    "web",
+    "web-framework",
+    "ton",
+    "async",
+    "await",
+    "mico",
+    "microservice",
+    "express",
+    "koa",
+    "hapi"
+  ],
   "engines": {
     "node": ">=10.x"
   },
