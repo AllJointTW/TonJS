@@ -5,7 +5,7 @@ import uWS from 'uWebSockets.js'
 import bytes from 'bytes'
 
 export type TonApp = uWS.TemplatedApp
-export type TonAppOptions = {
+export type TonAppSSLOptions = {
   ssl?: boolean
   key?: string
   cert?: string
@@ -374,26 +374,10 @@ export function route(
   app[methods](pattern, handler(routeHandler))
 }
 
-export function registerGracefulShutdown(socket: TonListenSocket) {
-  let hasBeenShutdown = false
-
-  function wrapper() {
-    if (!hasBeenShutdown) {
-      hasBeenShutdown = true
-      console.info('Gracefully shutting down. Please wait...')
-      uWS.us_listen_socket_close(socket)
-    }
-  }
-
-  process.on('SIGINT', wrapper)
-  process.on('SIGTERM', wrapper)
-  process.on('exit', wrapper)
-}
-
-export function createApp(options: TonAppOptions = {}): TonApp {
+export function createApp(options: TonAppSSLOptions = {}): TonApp {
   if (options.ssl) {
     /* eslint-disable @typescript-eslint/camelcase */
-    uWS.SSLApp({
+    return uWS.SSLApp({
       key_file_name: options.key,
       cert_file_name: options.cert,
       passphrase: options.passphrase,
@@ -413,10 +397,30 @@ export function listen(
   return new Promise((resolve, reject) => {
     app.listen(host, port, (token: TonListenSocket) => {
       if (!token) {
-        return reject()
+        return reject(new Error('missing token'))
       }
 
       return resolve(token)
     })
   })
+}
+
+export function close(token: TonListenSocket) {
+  uWS.us_listen_socket_close(token)
+}
+
+export function registerGracefulShutdown(socket: TonListenSocket) {
+  let hasBeenShutdown = false
+
+  function wrapper() {
+    if (!hasBeenShutdown) {
+      hasBeenShutdown = true
+      console.info('Gracefully shutting down. Please wait...')
+      close(socket)
+    }
+  }
+
+  process.on('SIGINT', wrapper)
+  process.on('SIGTERM', wrapper)
+  process.on('exit', wrapper)
 }
