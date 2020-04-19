@@ -71,14 +71,14 @@ yarn install
 
 # add the package in whole workspace (root)
 yarn add package-name --ignore-workspace-root-check
-# alternative yarn add package-name -W
+# alternative: yarn add package-name -W
 
 # add the package in special workspace
 yarn workspace workspace-name add package-name
 
 # add the package from another workspace
 yarn workspace workspace-a add workspace-b@version
-# ex. yarn workspace @tonjs/bin add @tonjs/ton@0.0.0ton
+# example: yarn workspace @tonjs/bin add @tonjs/ton@0.0.0ton
 ```
 
 **format**

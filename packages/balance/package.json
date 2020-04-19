@@ -1,5 +1,5 @@
 {
-  "name": "@tonjs/bin",
+  "name": "@tonjs/balance",
   "version": "0.0.0",
   "keywords": [
     "http",
@@ -20,7 +20,7 @@
     "hapi",
     "nest"
   ],
-  "description": "The runner of tonjs.",
+  "description": "The framework make tonjs more balanced.",
   "engines": {
     "node": ">=10.x"
   },
@@ -34,10 +34,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@tonjs/ton": "0.0.0",
-    "yargs": "^15.3.1"
+    "@tonjs/ton": "0.0.0"
   },
-  "devDependencies": {
-    "@types/yargs": "^15.0.4"
-  }
+  "devDependencies": {}
 }

@@ -1,0 +1,8 @@
+{
+  "extends": "@alljoint-next/ts-config",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "include": ["src"],
+  "exclude": ["**/*spec.ts", "**/*test.ts"]
+}
