@@ -1,6 +1,9 @@
 {
+  "name": "tonjs",
   "private": true,
   "workspaces": [
+    "packages/logger",
+    "packages/ton",
     "packages/*"
   ],
   "scripts": {

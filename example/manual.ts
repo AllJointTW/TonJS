@@ -6,7 +6,7 @@ import {
   listen,
   registerGracefulShutdown,
   route
-} from '../packages/tonjs/src'
+} from '../packages/ton/src'
 
 const host = '0.0.0.0'
 const port = 3000

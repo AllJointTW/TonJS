@@ -1,27 +1,29 @@
 {
-  "name": "@alljoint-next/tonjs",
+  "name": "@tonjs/ton",
   "version": "0.0.0",
   "keywords": [
     "http",
     "benchmark",
     "fast",
+    "light",
     "lightweight",
     "web",
     "web-framework",
     "ton",
+    "tonjs",
     "async",
     "await",
     "mico",
     "microservice",
     "express",
     "koa",
-    "hapi"
+    "hapi",
+    "nest"
   ],
+  "description": "The Node.js Web Framework For A Ton Of Request",
   "engines": {
     "node": ">=10.x"
   },
-  "description": "The Node.js Web Framework For A Ton Of Request",
-  "bin": "dist/bind.js",
   "main": "dist/index.js",
   "type": "dist/index.d.ts",
   "repository": "git@github.com:AllJointTW/TonJS.git",

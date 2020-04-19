@@ -8,7 +8,7 @@ import {
   TonListenSocket,
   registerGracefulShutdown,
   TonRoutes
-} from './index'
+} from '@tonjs/ton'
 
 import yargs = require('yargs')
 

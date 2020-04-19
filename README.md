@@ -70,27 +70,36 @@ yarn lerna create project-name
 yarn install
 
 # add the package in whole workspace (root)
-yarn add package-name --ignore-workspace-root-check # alternative yarn add package-name -W
+yarn add package-name --ignore-workspace-root-check
+# alternative yarn add package-name -W
 
 # add the package in special workspace
 yarn workspace workspace-name add package-name
+
+# add the package from another workspace
+yarn workspace workspace-a add workspace-b@version
+# ex. yarn workspace @tonjs/bin add @tonjs/ton@0.0.0ton
 ```
 
 **format**
 
 ```sh
-# format just root
+# format whole workspace (in root)
 yarn format
-
-# format the whole workspace (root)
-yarn workspaces run format
 ```
 
 **lint**
 
 ```sh
-# lint the whole workspace (root)
-yarn workspaces run lint --fix
+# lint the whole workspace (in root)
+yarn lint --fix
+```
+
+**build**
+
+```sh
+# build the any project in whole workspace (in root)
+yarn workspaces run build
 ```
 
 **release**

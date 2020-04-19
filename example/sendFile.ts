@@ -1,5 +1,5 @@
 import { createReadStream, statSync } from 'fs'
-import { TonHandler, TonStream, sendStream } from '../packages/tonjs/src'
+import { TonHandler, TonStream, sendStream } from '../packages/ton/src'
 
 const target = 'README.md'
 const { size } = statSync(target)
