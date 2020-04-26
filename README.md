@@ -78,7 +78,17 @@ yarn workspace workspace-name add package-name
 
 # add the package from another workspace
 yarn workspace workspace-a add workspace-b@version
-# example: yarn workspace @tonjs/bin add @tonjs/ton@0.0.0ton
+# example: yarn workspace @tonjs/bin add @tonjs/ton@0.0.0
+```
+
+**dev**
+
+```sh
+# build the packages first
+yarn build
+
+# dev any ts file
+yarn dev file-name.ts
 ```
 
 **format**
@@ -95,11 +105,26 @@ yarn format
 yarn lint --fix
 ```
 
+**test**
+
+```sh
+# test the code
+yarn test # --coverage --watch
+```
+
+**clean**
+
+```sh
+# clean the project
+yarn clean
+```
+
 **build**
 
 ```sh
 # build the any project in whole workspace (in root)
-yarn workspaces run build
+yarn build # or
+# yarn workspaces run build
 ```
 
 **release**
