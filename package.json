@@ -7,11 +7,12 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "nodemon --watch '{packages,example}/**/*.ts' --ignore '{packages,example}/**/*.{spec,test}.ts' --exec 'ts-node' packages/tonjs/src/bin.ts",
+    "dev": "nodemon --watch '{packages,example}/**/*.ts' --ignore '{packages,example}/**/*.{spec,test}.ts' --exec 'ts-node'",
     "format": "prettier '**/*.{js,json,ts,md,yaml}' !**/dist/** !./dist/** !**/coverage/** --write --no-semi --single-quote && yarn lint --fix",
     "lint": "eslint '**/*.ts'",
     "test": "jest",
-    "clean": "rimraf coverage packages/*/dist"
+    "clean": "rimraf coverage packages/*/dist",
+    "build": "yarn workspaces run build"
   },
   "devDependencies": {
     "@alljoint-next/eslint-config-typescript": "^0.3.0",
