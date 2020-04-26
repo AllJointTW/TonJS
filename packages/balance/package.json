@@ -34,7 +34,10 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@tonjs/ton": "0.0.0"
+    "@tonjs/ton": "0.0.0",
+    "reflect-metadata": "^0.1.13"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/reflect-metadata": "^0.1.0"
+  }
 }
