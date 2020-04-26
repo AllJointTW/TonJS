@@ -16,10 +16,19 @@ function checkPortInUse(port: number): Promise<boolean> {
   })
 }
 
+let mockLogger: ton.TonLogger
 let mockRes: ton.TonResponse
 let mockApp: ton.TonApp
 
 beforeEach(() => {
+  mockLogger = {
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+    debug: jest.fn(),
+    verbose: jest.fn()
+  }
+
   mockRes = {
     aborted: false,
     writeStatus: jest.fn(),
@@ -55,28 +64,19 @@ beforeEach(() => {
 
 describe('handler', () => {
   it('should set res.aborted to true, if res is onAborted', async () => {
-    // eslint-disable-next-line no-console
-    const originalConsoleError = console.error
-    // eslint-disable-next-line no-console
-    console.error = jest.fn()
     const h: ton.TonHandler = () => ''
     mockRes.onAborted = jest.fn(fn => {
       fn()
       return mockRes
     })
-    const inner = ton.handler(h)
+    const inner = ton.handler(h, { logger: mockLogger })
     await inner(mockRes, {} as any)
 
     expect(mockRes.aborted).toBe(true)
-    // eslint-disable-next-line no-console
-    expect(console.error).toHaveBeenCalledTimes(1)
-    // eslint-disable-next-line no-console
-    expect(console.error).toHaveBeenCalledWith(
+    expect(mockLogger.error).toHaveBeenCalledTimes(1)
+    expect(mockLogger.error).toHaveBeenCalledWith(
       ton.create5xxError(500, "Can't send anything after response was aborted")
     )
-
-    // eslint-disable-next-line no-console
-    console.error = originalConsoleError
   })
 
   it('should not auto send, if result is undefined', async () => {
@@ -159,29 +159,23 @@ describe('close', () => {
 
 describe('registerGracefulShutdown', () => {
   const originalProcessOn = process.on
-  // eslint-disable-next-line no-console
-  const originalConsoleInfo = console.info
 
   beforeEach(() => {
     process.on = jest.fn((event, listener) => listener()) as any
-    // eslint-disable-next-line no-console
-    console.info = jest.fn()
   })
 
   afterAll(() => {
     process.on = originalProcessOn
-    // eslint-disable-next-line no-console
-    console.info = originalConsoleInfo
   })
 
-  it('should graceful sutdown', async () => {
+  it('should graceful shutdown', async () => {
     const port = 3000
     const app = ton.createApp()
     const token = await ton.listen(app, '0.0.0.0', port)
     expect(await checkPortInUse(port)).toBe(true)
-    ton.registerGracefulShutdown(token)
-    // eslint-disable-next-line no-console
-    expect(console.info).toBeCalledWith(
+    ton.registerGracefulShutdown(token, { logger: mockLogger })
+
+    expect(mockLogger.info).toBeCalledWith(
       'Gracefully shutting down. Please wait...'
     )
     expect(await checkPortInUse(port)).toBe(false)

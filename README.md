@@ -109,7 +109,7 @@ yarn lint --fix
 
 ```sh
 # test the code
-yarn test # --coverage --watch
+yarn test # --coverage --watchAll
 ```
 
 **clean**

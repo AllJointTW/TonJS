@@ -1,9 +1,18 @@
 import { Readable } from 'stream'
 import * as ton from './index'
 
+let mockLogger: ton.TonLogger
 let mockRes: ton.TonResponse
 
 beforeEach(() => {
+  mockLogger = {
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+    debug: jest.fn(),
+    verbose: jest.fn()
+  }
+
   mockRes = {
     aborted: false,
     writeStatus: jest.fn(),
@@ -213,39 +222,28 @@ describe('sendJSON', () => {
 })
 
 describe('sendError', () => {
-  // eslint-disable-next-line no-console
-  const originalConsoleError = console.error
   const originalNodeEnv = process.env.NODE_ENV
   const message = "Uncaught TypeError: Cannot read property 'c' of undefined"
   const errorNormal = new Error(message)
   const error400 = ton.create4xxError(400, ton.TonStatusCodes[400])
   const error500 = ton.create5xxError(500, ton.TonStatusCodes[500], errorNormal)
 
-  beforeEach(() => {
-    // eslint-disable-next-line no-console
-    console.error = jest.fn()
-  })
-
   afterEach(() => {
     process.env.NODE_ENV = originalNodeEnv
-    // eslint-disable-next-line no-console
-    console.error = originalConsoleError
   })
 
   it('should not send anything, if response is aborted', () => {
     mockRes.aborted = true
-    ton.sendError(mockRes, errorNormal)
+    ton.sendError(mockRes, errorNormal, { logger: mockLogger })
 
-    // eslint-disable-next-line no-console
-    expect(console.error).toHaveBeenCalledTimes(1)
-    // eslint-disable-next-line no-console
-    expect(console.error).toHaveBeenCalledWith(
+    expect(mockLogger.error).toHaveBeenCalledTimes(1)
+    expect(mockLogger.error).toHaveBeenCalledWith(
       ton.create5xxError(500, "Can't send anything after response was aborted")
     )
   })
 
   it('should send normal error with 500 statusCode', () => {
-    ton.sendError(mockRes, errorNormal)
+    ton.sendError(mockRes, errorNormal, { logger: mockLogger })
 
     expect(mockRes.writeStatus).toHaveBeenCalledTimes(1)
     expect(mockRes.writeStatus).toHaveBeenCalledWith(
@@ -262,14 +260,12 @@ describe('sendError', () => {
     expect(mockRes.end).toHaveBeenCalledTimes(1)
     expect(mockRes.end).toHaveBeenCalledWith(`{"message":"${message}"}`)
 
-    // eslint-disable-next-line no-console
-    expect(console.error).toHaveBeenCalledTimes(1)
-    // eslint-disable-next-line no-console
-    expect(console.error).toHaveBeenCalledWith(errorNormal)
+    expect(mockLogger.error).toHaveBeenCalledTimes(1)
+    expect(mockLogger.error).toHaveBeenCalledWith(errorNormal)
   })
 
-  it('should send 500 error and console.error message of normal error', () => {
-    ton.sendError(mockRes, error500)
+  it('should send 500 error and logger.error message of normal error', () => {
+    ton.sendError(mockRes, error500, { logger: mockLogger })
 
     expect(mockRes.writeStatus).toHaveBeenCalledTimes(1)
     expect(mockRes.writeStatus).toHaveBeenCalledWith(
@@ -288,14 +284,12 @@ describe('sendError', () => {
       `{"message":"${ton.TonStatusCodes[500]}"}`
     )
 
-    // eslint-disable-next-line no-console
-    expect(console.error).toHaveBeenCalledTimes(1)
-    // eslint-disable-next-line no-console
-    expect(console.error).toHaveBeenCalledWith(errorNormal)
+    expect(mockLogger.error).toHaveBeenCalledTimes(1)
+    expect(mockLogger.error).toHaveBeenCalledWith(errorNormal)
   })
 
-  it('should send 400 error and should not console.error it', () => {
-    ton.sendError(mockRes, error400)
+  it('should send 400 error and should not logger.error it', () => {
+    ton.sendError(mockRes, error400, { logger: mockLogger })
 
     expect(mockRes.writeStatus).toHaveBeenCalledTimes(1)
     expect(mockRes.writeStatus).toHaveBeenCalledWith(
@@ -314,15 +308,14 @@ describe('sendError', () => {
       `{"message":"${ton.TonStatusCodes[400]}"}`
     )
 
-    // eslint-disable-next-line no-console
-    expect(console.error).toHaveBeenCalledTimes(0)
+    expect(mockLogger.error).toHaveBeenCalledTimes(0)
   })
 
   it(`
 should send normal error with 500 statusCode and message of TonStatusCode, \
 if process.env.NODE_ENV equal to 'production'`, () => {
     process.env.NODE_ENV = 'production'
-    ton.sendError(mockRes, errorNormal)
+    ton.sendError(mockRes, errorNormal, { logger: mockLogger })
 
     expect(mockRes.writeStatus).toHaveBeenCalledTimes(1)
     expect(mockRes.writeStatus).toHaveBeenCalledWith(
@@ -341,17 +334,15 @@ if process.env.NODE_ENV equal to 'production'`, () => {
       `{"message":"${ton.TonStatusCodes[500]}"}`
     )
 
-    // eslint-disable-next-line no-console
-    expect(console.error).toHaveBeenCalledTimes(1)
-    // eslint-disable-next-line no-console
-    expect(console.error).toHaveBeenCalledWith(errorNormal)
+    expect(mockLogger.error).toHaveBeenCalledTimes(1)
+    expect(mockLogger.error).toHaveBeenCalledWith(errorNormal)
   })
 
   it(`should send message of TonStatusCode[statusCode], \
 if message is empty`, () => {
     const errorEmpty = new Error() as ton.TonError
     errorEmpty.statusCode = 502
-    ton.sendError(mockRes, errorEmpty)
+    ton.sendError(mockRes, errorEmpty, { logger: mockLogger })
 
     expect(mockRes.writeStatus).toHaveBeenCalledTimes(1)
     expect(mockRes.writeStatus).toHaveBeenCalledWith(
@@ -370,16 +361,14 @@ if message is empty`, () => {
       `{"message":"${ton.TonStatusCodes[502]}"}`
     )
 
-    // eslint-disable-next-line no-console
-    expect(console.error).toHaveBeenCalledTimes(1)
-    // eslint-disable-next-line no-console
-    expect(console.error).toHaveBeenCalledWith(errorEmpty)
+    expect(mockLogger.error).toHaveBeenCalledTimes(1)
+    expect(mockLogger.error).toHaveBeenCalledWith(errorEmpty)
   })
 
   it(`should send message of TonStatusCodes[500], if message is empty`, () => {
     const errorEmpty = new Error() as ton.TonError
     errorEmpty.statusCode = 600
-    ton.sendError(mockRes, errorEmpty)
+    ton.sendError(mockRes, errorEmpty, { logger: mockLogger })
 
     expect(mockRes.writeStatus).toHaveBeenCalledTimes(1)
     expect(mockRes.writeStatus).toHaveBeenCalledWith(
@@ -398,10 +387,8 @@ if message is empty`, () => {
       `{"message":"${ton.TonStatusCodes[500]}"}`
     )
 
-    // eslint-disable-next-line no-console
-    expect(console.error).toHaveBeenCalledTimes(1)
-    // eslint-disable-next-line no-console
-    expect(console.error).toHaveBeenCalledWith(errorEmpty)
+    expect(mockLogger.error).toHaveBeenCalledTimes(1)
+    expect(mockLogger.error).toHaveBeenCalledWith(errorEmpty)
   })
 })
 
@@ -423,7 +410,6 @@ describe('sendStream', () => {
     ton.sendStream(mockRes, 200, mockStream)
 
     expect(mockRes.writeStatus).toHaveBeenCalledTimes(0)
-
     expect(mockRes.writeHeader).toHaveBeenCalledTimes(1)
     expect(mockRes.writeHeader).toHaveBeenNthCalledWith(
       1,
@@ -677,7 +663,32 @@ describe('send', () => {
     expect(mockStream.destroy).toHaveBeenCalledTimes(1)
   })
 
-  it('should send JSON , if data is object', () => {
+  it('should send error, if data is error', () => {
+    const message = 'Invalid Fields'
+    const error = new Error(message)
+
+    ton.send(mockRes, 200, error, undefined, { logger: mockLogger })
+
+    expect(mockRes.writeStatus).toHaveBeenCalledTimes(1)
+    expect(mockRes.writeStatus).toHaveBeenCalledWith(
+      `500 ${ton.TonStatusCodes[500]}`
+    )
+
+    expect(mockRes.writeHeader).toHaveBeenCalledTimes(1)
+    expect(mockRes.writeHeader).toHaveBeenNthCalledWith(
+      1,
+      'Content-Type',
+      'application/json; charset=utf-8'
+    )
+
+    expect(mockRes.end).toHaveBeenCalledTimes(1)
+    expect(mockRes.end).toHaveBeenCalledWith(`{"message":"${message}"}`)
+
+    expect(mockLogger.error).toHaveBeenCalledTimes(1)
+    expect(mockLogger.error).toHaveBeenCalledWith(error)
+  })
+
+  it('should send JSON, if data is object', () => {
     ton.send(mockRes, 200, { key: 'value' })
 
     expect(mockRes.writeHeader).toHaveBeenCalledTimes(1)

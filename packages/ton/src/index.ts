@@ -1,8 +1,8 @@
-/* eslint-disable no-console */
 import { STATUS_CODES } from 'http'
 import stream from 'stream'
 import uWS from 'uWebSockets.js'
 import bytes from 'bytes'
+import * as tonLogger from '@tonjs/logger'
 
 export type TonApp = uWS.TemplatedApp
 export type TonAppSSLOptions = {
@@ -19,7 +19,7 @@ export type TonResponse = uWS.HttpResponse & {
   aborted: boolean
 }
 export type TonStream = stream.Readable & { size?: number }
-export type TonData = string | number | object | TonStream
+export type TonData = string | number | object | TonStream | Error
 export type TonHeaders = { [key: string]: string }
 export type TonHandler = (
   req: TonRequest,
@@ -29,6 +29,13 @@ export type TonError = Error & {
   statusCode: number
   original?: Error
   fields?: any
+}
+export type TonLogger = {
+  error: (...args: any[]) => void
+  warn: (...args: any[]) => void
+  info: (...args: any[]) => void
+  debug: (...args: any[]) => void
+  verbose: (...args: any[]) => void
 }
 export type TonMethods =
   | 'get'
@@ -149,11 +156,16 @@ export function sendJSON(
   res.end(JSON.stringify(data))
 }
 
-export function sendError(res: TonResponse, err: TonError | Error): void {
+export function sendError(
+  res: TonResponse,
+  err: TonError | Error,
+  /* istanbul ignore next */
+  { logger = tonLogger }: { logger?: TonLogger } = {}
+): void {
   try {
     checkIsNotAborted(res)
   } catch (abortedError) {
-    console.error(abortedError)
+    logger.error(abortedError)
     return
   }
 
@@ -174,9 +186,9 @@ export function sendError(res: TonResponse, err: TonError | Error): void {
   }
 
   if (error.original) {
-    console.error(error.original)
+    logger.error(error.original)
   } else {
-    console.error(error)
+    logger.error(error)
   }
 }
 
@@ -271,7 +283,8 @@ export function send(
   res: TonResponse,
   statusCode: number,
   data?: TonData | void,
-  headers: TonHeaders = {}
+  headers: TonHeaders = {},
+  options?: { logger: TonLogger }
 ): void {
   checkIsNotAborted(res)
 
@@ -287,6 +300,11 @@ export function send(
 
   if (data instanceof stream.Readable) {
     sendStream(res, statusCode, data as TonStream, headers)
+    return
+  }
+
+  if (data instanceof Error) {
+    sendError(res, data, options)
     return
   }
 
@@ -344,7 +362,7 @@ export async function readJSON(
   }
 }
 
-export function handler(fn: TonHandler) {
+export function handler(fn: TonHandler, options?: { logger: TonLogger }) {
   return async (res: TonResponse, req: TonRequest): Promise<void> => {
     res.aborted = false
     res.onAborted(() => {
@@ -360,7 +378,7 @@ export function handler(fn: TonHandler) {
 
       send(res, res.statusCode || 200, result)
     } catch (err) {
-      sendError(res, create5xxError(500, TonStatusCodes[500], err))
+      sendError(res, create5xxError(500, TonStatusCodes[500], err), options)
     }
   }
 }
@@ -409,13 +427,17 @@ export function close(token: TonListenSocket) {
   uWS.us_listen_socket_close(token)
 }
 
-export function registerGracefulShutdown(socket: TonListenSocket) {
+export function registerGracefulShutdown(
+  socket: TonListenSocket,
+  /* istanbul ignore next */
+  { logger = tonLogger }: { logger?: TonLogger } = {}
+) {
   let hasBeenShutdown = false
 
   function wrapper() {
     if (!hasBeenShutdown) {
       hasBeenShutdown = true
-      console.info('Gracefully shutting down. Please wait...')
+      logger.info('Gracefully shutting down. Please wait...')
       close(socket)
     }
   }
