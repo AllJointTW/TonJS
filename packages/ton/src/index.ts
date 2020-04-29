@@ -392,15 +392,33 @@ export function route(
   app[methods](pattern, handler(routeHandler))
 }
 
-export function createApp(options: TonAppSSLOptions = {}): TonApp {
-  if (options.ssl) {
+export function createRoute(methods: TonMethods) {
+  return (app: TonApp, pattern: string, routeHandler: TonHandler) =>
+    route(app, methods, pattern, routeHandler)
+}
+
+export const any = createRoute('any')
+export const connect = createRoute('connect')
+export const del = createRoute('del')
+export const get = createRoute('get')
+export const head = createRoute('head')
+export const options = createRoute('options')
+export const path = createRoute('path')
+export const post = createRoute('post')
+export const publish = createRoute('publish')
+export const put = createRoute('put')
+export const trace = createRoute('trace')
+export const ws = createRoute('ws')
+
+export function createApp(opts: TonAppSSLOptions = {}): TonApp {
+  if (opts.ssl) {
     /* eslint-disable @typescript-eslint/camelcase */
     return uWS.SSLApp({
-      key_file_name: options.key,
-      cert_file_name: options.cert,
-      passphrase: options.passphrase,
-      dh_params_file_name: options.dhParams,
-      ssl_prefer_low_memory_usage: options.preferLowMemoryUsage
+      key_file_name: opts.key,
+      cert_file_name: opts.cert,
+      passphrase: opts.passphrase,
+      dh_params_file_name: opts.dhParams,
+      ssl_prefer_low_memory_usage: opts.preferLowMemoryUsage
     })
     /* eslint-enable @typescript-eslint/camelcase */
   }
