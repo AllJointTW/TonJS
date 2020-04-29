@@ -109,6 +109,98 @@ describe('route', () => {
   })
 })
 
+describe('createRoute', () => {
+  it('should create route with specific method', () => {
+    const mockHandler: ton.TonHandler = jest.fn()
+    const get = ton.createRoute('get')
+    get(mockApp, '/*', mockHandler)
+    expect(mockApp.get).toBeCalledTimes(1)
+    expect((mockApp.get as jest.Mock).mock.calls[0][0]).toBe('/*')
+  })
+})
+
+describe('routes', () => {
+  it('should create route with any method', () => {
+    const mockHandler: ton.TonHandler = jest.fn()
+    const any = ton.createRoute('any')
+    any(mockApp, '/*', mockHandler)
+    expect(mockApp.any).toBeCalledTimes(1)
+    expect((mockApp.any as jest.Mock).mock.calls[0][0]).toBe('/*')
+  })
+
+  it('should create route with connect method', () => {
+    const mockHandler: ton.TonHandler = jest.fn()
+    const connect = ton.createRoute('connect')
+    connect(mockApp, '/*', mockHandler)
+    expect(mockApp.connect).toBeCalledTimes(1)
+    expect((mockApp.connect as jest.Mock).mock.calls[0][0]).toBe('/*')
+  })
+
+  it('should create route with del method', () => {
+    const mockHandler: ton.TonHandler = jest.fn()
+    const del = ton.createRoute('del')
+    del(mockApp, '/*', mockHandler)
+    expect(mockApp.del).toBeCalledTimes(1)
+    expect((mockApp.del as jest.Mock).mock.calls[0][0]).toBe('/*')
+  })
+
+  it('should create route with get method', () => {
+    const mockHandler: ton.TonHandler = jest.fn()
+    const get = ton.createRoute('get')
+    get(mockApp, '/*', mockHandler)
+    expect(mockApp.get).toBeCalledTimes(1)
+    expect((mockApp.get as jest.Mock).mock.calls[0][0]).toBe('/*')
+  })
+
+  it('should create route with head method', () => {
+    const mockHandler: ton.TonHandler = jest.fn()
+    const head = ton.createRoute('head')
+    head(mockApp, '/*', mockHandler)
+    expect(mockApp.head).toBeCalledTimes(1)
+    expect((mockApp.head as jest.Mock).mock.calls[0][0]).toBe('/*')
+  })
+
+  it('should create route with options method', () => {
+    const mockHandler: ton.TonHandler = jest.fn()
+    const options = ton.createRoute('options')
+    options(mockApp, '/*', mockHandler)
+    expect(mockApp.options).toBeCalledTimes(1)
+    expect((mockApp.options as jest.Mock).mock.calls[0][0]).toBe('/*')
+  })
+
+  it('should create route with patch method', () => {
+    const mockHandler: ton.TonHandler = jest.fn()
+    const patch = ton.createRoute('patch')
+    patch(mockApp, '/*', mockHandler)
+    expect(mockApp.patch).toBeCalledTimes(1)
+    expect((mockApp.patch as jest.Mock).mock.calls[0][0]).toBe('/*')
+  })
+
+  it('should create route with post method', () => {
+    const mockHandler: ton.TonHandler = jest.fn()
+    const post = ton.createRoute('post')
+    post(mockApp, '/*', mockHandler)
+    expect(mockApp.post).toBeCalledTimes(1)
+    expect((mockApp.post as jest.Mock).mock.calls[0][0]).toBe('/*')
+  })
+
+  it('should create route with put method', () => {
+    const mockHandler: ton.TonHandler = jest.fn()
+    const put = ton.createRoute('put')
+    put(mockApp, '/*', mockHandler)
+    expect(mockApp.put).toBeCalledTimes(1)
+    expect((mockApp.put as jest.Mock).mock.calls[0][0]).toBe('/*')
+  })
+
+  it('should create route with trace method', () => {
+    const mockHandler: ton.TonHandler = jest.fn()
+    const trace = ton.createRoute('trace')
+    trace(mockApp, '/*', mockHandler)
+    expect(mockApp.trace).toBeCalledTimes(1)
+    expect((mockApp.trace as jest.Mock).mock.calls[0][0]).toBe('/*')
+  })
+})
+
 describe('createApp', () => {
   it('should create the app', () => {
     const app = ton.createApp()

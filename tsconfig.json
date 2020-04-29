@@ -1,6 +1,6 @@
 {
   "extends": "@alljoint-next/ts-config",
   "compilerOptions": {
-    "types": ["jest", "node", "reflect-metadata"]
+    "types": ["jest", "node"]
   }
 }

@@ -234,7 +234,7 @@ describe('sendError', () => {
 
   it('should not send anything, if response is aborted', () => {
     mockRes.aborted = true
-    ton.sendError(mockRes, errorNormal, { logger: mockLogger })
+    ton.sendError(mockRes, errorNormal, undefined, { logger: mockLogger })
 
     expect(mockLogger.error).toHaveBeenCalledTimes(1)
     expect(mockLogger.error).toHaveBeenCalledWith(
@@ -243,7 +243,7 @@ describe('sendError', () => {
   })
 
   it('should send normal error with 500 statusCode', () => {
-    ton.sendError(mockRes, errorNormal, { logger: mockLogger })
+    ton.sendError(mockRes, errorNormal, undefined, { logger: mockLogger })
 
     expect(mockRes.writeStatus).toHaveBeenCalledTimes(1)
     expect(mockRes.writeStatus).toHaveBeenCalledWith(
@@ -265,7 +265,7 @@ describe('sendError', () => {
   })
 
   it('should send 500 error and logger.error message of normal error', () => {
-    ton.sendError(mockRes, error500, { logger: mockLogger })
+    ton.sendError(mockRes, error500, undefined, { logger: mockLogger })
 
     expect(mockRes.writeStatus).toHaveBeenCalledTimes(1)
     expect(mockRes.writeStatus).toHaveBeenCalledWith(
@@ -289,7 +289,7 @@ describe('sendError', () => {
   })
 
   it('should send 400 error and should not logger.error it', () => {
-    ton.sendError(mockRes, error400, { logger: mockLogger })
+    ton.sendError(mockRes, error400, undefined, { logger: mockLogger })
 
     expect(mockRes.writeStatus).toHaveBeenCalledTimes(1)
     expect(mockRes.writeStatus).toHaveBeenCalledWith(
@@ -315,7 +315,7 @@ describe('sendError', () => {
 should send normal error with 500 statusCode and message of TonStatusCode, \
 if process.env.NODE_ENV equal to 'production'`, () => {
     process.env.NODE_ENV = 'production'
-    ton.sendError(mockRes, errorNormal, { logger: mockLogger })
+    ton.sendError(mockRes, errorNormal, undefined, { logger: mockLogger })
 
     expect(mockRes.writeStatus).toHaveBeenCalledTimes(1)
     expect(mockRes.writeStatus).toHaveBeenCalledWith(
@@ -342,7 +342,7 @@ if process.env.NODE_ENV equal to 'production'`, () => {
 if message is empty`, () => {
     const errorEmpty = new Error() as ton.TonError
     errorEmpty.statusCode = 502
-    ton.sendError(mockRes, errorEmpty, { logger: mockLogger })
+    ton.sendError(mockRes, errorEmpty, undefined, { logger: mockLogger })
 
     expect(mockRes.writeStatus).toHaveBeenCalledTimes(1)
     expect(mockRes.writeStatus).toHaveBeenCalledWith(
@@ -368,7 +368,7 @@ if message is empty`, () => {
   it(`should send message of TonStatusCodes[500], if message is empty`, () => {
     const errorEmpty = new Error() as ton.TonError
     errorEmpty.statusCode = 600
-    ton.sendError(mockRes, errorEmpty, { logger: mockLogger })
+    ton.sendError(mockRes, errorEmpty, undefined, { logger: mockLogger })
 
     expect(mockRes.writeStatus).toHaveBeenCalledTimes(1)
     expect(mockRes.writeStatus).toHaveBeenCalledWith(

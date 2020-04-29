@@ -37,23 +37,25 @@ export type TonLogger = {
   debug: (...args: any[]) => void
   verbose: (...args: any[]) => void
 }
-export type TonMethods =
+export type TonHTTPMethods =
   | 'get'
   | 'post'
   | 'options'
   | 'del'
-  | 'path'
+  | 'patch'
   | 'put'
   | 'head'
   | 'connect'
   | 'trace'
   | 'any'
-  | 'ws'
-  | 'publish'
 // eslint-disable-next-line camelcase, @typescript-eslint/camelcase
 export type TonListenSocket = uWS.us_listen_socket
 export type TonRoutes = {
-  [patter: string]: { methods: TonMethods; handler: TonHandler }
+  [patter: string]: {
+    methods: TonHTTPMethods
+    handler: TonHandler
+    options: { logger: TonLogger }
+  }
 }
 export const TonStatusCodes = STATUS_CODES
 
@@ -159,6 +161,7 @@ export function sendJSON(
 export function sendError(
   res: TonResponse,
   err: TonError | Error,
+  headers: TonHeaders = {},
   /* istanbul ignore next */
   { logger = tonLogger }: { logger?: TonLogger } = {}
 ): void {
@@ -176,9 +179,9 @@ export function sendError(
   const data = { message }
 
   if (process.env.NODE_ENV === 'production' && statusCode >= 500) {
-    sendJSON(res, statusCode, { message: TonStatusCodes[statusCode] })
+    sendJSON(res, statusCode, { message: TonStatusCodes[statusCode] }, headers)
   } else {
-    sendJSON(res, statusCode, data)
+    sendJSON(res, statusCode, data, headers)
   }
 
   if (statusCode < 500) {
@@ -304,7 +307,7 @@ export function send(
   }
 
   if (data instanceof Error) {
-    sendError(res, data, options)
+    sendError(res, data, headers, options)
     return
   }
 
@@ -376,31 +379,57 @@ export function handler(fn: TonHandler, options?: { logger: TonLogger }) {
         return
       }
 
-      send(res, res.statusCode || 200, result)
+      send(res, res.statusCode || 200, result, undefined, options)
     } catch (err) {
-      sendError(res, create5xxError(500, TonStatusCodes[500], err), options)
+      sendError(
+        res,
+        create5xxError(500, TonStatusCodes[500], err),
+        undefined,
+        options
+      )
     }
   }
 }
 
 export function route(
   app: TonApp,
-  methods: TonMethods,
+  methods: TonHTTPMethods,
   pattern: string,
-  routeHandler: TonHandler
+  routeHandler: TonHandler,
+  options?: { logger: TonLogger }
 ) {
-  app[methods](pattern, handler(routeHandler))
+  app[methods](pattern, handler(routeHandler, options))
 }
 
-export function createApp(options: TonAppSSLOptions = {}): TonApp {
-  if (options.ssl) {
+export function createRoute(methods: TonHTTPMethods) {
+  return (
+    app: TonApp,
+    pattern: string,
+    routeHandler: TonHandler,
+    options?: { logger: TonLogger }
+  ) => route(app, methods, pattern, routeHandler, options)
+}
+
+export const any = createRoute('any')
+export const connect = createRoute('connect')
+export const del = createRoute('del')
+export const get = createRoute('get')
+export const head = createRoute('head')
+export const options = createRoute('options')
+export const patch = createRoute('patch')
+export const post = createRoute('post')
+export const put = createRoute('put')
+export const trace = createRoute('trace')
+
+export function createApp(opts: TonAppSSLOptions = {}): TonApp {
+  if (opts.ssl) {
     /* eslint-disable @typescript-eslint/camelcase */
     return uWS.SSLApp({
-      key_file_name: options.key,
-      cert_file_name: options.cert,
-      passphrase: options.passphrase,
-      dh_params_file_name: options.dhParams,
-      ssl_prefer_low_memory_usage: options.preferLowMemoryUsage
+      key_file_name: opts.key,
+      cert_file_name: opts.cert,
+      passphrase: opts.passphrase,
+      dh_params_file_name: opts.dhParams,
+      ssl_prefer_low_memory_usage: opts.preferLowMemoryUsage
     })
     /* eslint-enable @typescript-eslint/camelcase */
   }
