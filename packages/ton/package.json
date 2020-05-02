@@ -25,8 +25,11 @@
   ],
   "description": "The Node.js Web Framework For A Ton Of Request",
   "engines": {
-    "node": ">=10.x"
+    "node": ">=12.x"
   },
+  "files": [
+    "dist"
+  ],
   "main": "dist/index.js",
   "type": "dist/index.d.ts",
   "repository": "git@github.com:AllJointTW/TonJS.git",

@@ -1,13 +1,14 @@
 /* eslint-disable no-console */
 import path from 'path'
 import {
+  TonHandler,
+  TonRoute,
+  TonRoutes,
+  TonListenSocket,
   createApp,
   listen,
-  route,
-  TonHandler,
-  TonListenSocket,
-  registerGracefulShutdown,
-  TonRoutes
+  routes,
+  registerGracefulShutdown
 } from '@tonjs/ton'
 
 import yargs = require('yargs')
@@ -66,28 +67,10 @@ async function main() {
   try {
     const [entry = 'index.js'] = argv._
     const app = createApp(argv)
-    const endpoints: TonHandler | TonRoutes = (
+    const endpoint: TonHandler | TonRoute | TonRoutes = (
       await import(path.resolve(process.cwd(), entry))
     ).default
-
-    console.info('\nroutes:')
-    if (typeof endpoints === 'object' && endpoints !== null) {
-      Object.keys(endpoints as TonRoutes).forEach(key => {
-        const pattern = key
-        const { methods, handler } = endpoints[key]
-        let handlerName = handler.name || 'anonymous'
-        if (handlerName === 'handler') {
-          handlerName = 'anonymous'
-        }
-        console.info(`  ${key} => ${handlerName}()`)
-        route(app, methods, pattern, handler)
-      })
-    } else {
-      const { name = 'anonymous' } = endpoints as TonHandler
-      console.info(`  /* => ${name}()`)
-      route(app, 'any', '/*', endpoints as TonHandler)
-    }
-
+    routes(app, endpoint)
     const token: TonListenSocket = await listen(app, argv.host, argv.port)
     registerGracefulShutdown(token)
     console.info(

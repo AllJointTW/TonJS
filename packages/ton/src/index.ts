@@ -50,13 +50,13 @@ export type TonHTTPMethods =
   | 'any'
 // eslint-disable-next-line camelcase, @typescript-eslint/camelcase
 export type TonListenSocket = uWS.us_listen_socket
-export type TonRoutes = {
-  [patter: string]: {
-    methods: TonHTTPMethods
-    handler: TonHandler
-    options: { logger: TonLogger }
-  }
+export type TonRoute = {
+  methods: TonHTTPMethods
+  pattern: string
+  handler: TonHandler
+  options?: { logger: TonLogger }
 }
+export type TonRoutes = TonRoute[]
 export const TonStatusCodes = STATUS_CODES
 
 const ContentType = 'Content-Type'
@@ -401,7 +401,7 @@ export function route(
   app[methods](pattern, handler(routeHandler, options))
 }
 
-export function createRoute(methods: TonHTTPMethods) {
+export function createRouteWith(methods: TonHTTPMethods) {
   return (
     app: TonApp,
     pattern: string,
@@ -410,16 +410,57 @@ export function createRoute(methods: TonHTTPMethods) {
   ) => route(app, methods, pattern, routeHandler, options)
 }
 
-export const any = createRoute('any')
-export const connect = createRoute('connect')
-export const del = createRoute('del')
-export const get = createRoute('get')
-export const head = createRoute('head')
-export const options = createRoute('options')
-export const patch = createRoute('patch')
-export const post = createRoute('post')
-export const put = createRoute('put')
-export const trace = createRoute('trace')
+export const any = createRouteWith('any')
+export const connect = createRouteWith('connect')
+export const del = createRouteWith('del')
+export const get = createRouteWith('get')
+export const head = createRouteWith('head')
+export const options = createRouteWith('options')
+export const patch = createRouteWith('patch')
+export const post = createRouteWith('post')
+export const put = createRouteWith('put')
+export const trace = createRouteWith('trace')
+
+export function getHandlerName(fn: TonHandler) {
+  const name = fn?.name || 'anonymous'
+  if (name === 'handler') {
+    return 'anonymous'
+  }
+  return name
+}
+
+export function routes(
+  app: TonApp,
+  endpoints: TonHandler | TonRoute | TonRoutes,
+  /* istanbul ignore next */
+  { logger = tonLogger }: { logger?: TonLogger } = {}
+) {
+  logger.debug('\nroutes:')
+
+  if (Array.isArray(endpoints)) {
+    endpoints.forEach(item => {
+      const { methods, pattern, handler: handlerOfEndpoints } = item
+      const name = getHandlerName(handlerOfEndpoints)
+      logger.debug(`  ${methods} ${pattern} => ${name}()`)
+      route(app, methods, pattern, handlerOfEndpoints)
+    })
+    return
+  }
+
+  if (typeof endpoints === 'object' && endpoints !== null) {
+    const { methods, pattern, handler: handlerOfEndpoint } = endpoints
+    const name = getHandlerName(handlerOfEndpoint)
+    logger.debug(`  ${methods} ${pattern} => ${name}()`)
+    route(app, methods, pattern, handlerOfEndpoint)
+    return
+  }
+
+  if (typeof endpoints === 'function') {
+    const name = getHandlerName(endpoints as TonHandler)
+    logger.debug(`  any /* => ${name}()`)
+    route(app, 'any', '/*', endpoints as TonHandler)
+  }
+}
 
 export function createApp(opts: TonAppSSLOptions = {}): TonApp {
   if (opts.ssl) {

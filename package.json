@@ -4,6 +4,7 @@
   "workspaces": [
     "packages/logger",
     "packages/ton",
+    "packages/bin",
     "packages/*"
   ],
   "scripts": {

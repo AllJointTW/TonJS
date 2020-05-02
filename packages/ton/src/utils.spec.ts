@@ -109,20 +109,20 @@ describe('route', () => {
   })
 })
 
-describe('createRoute', () => {
+describe('createRouteWith', () => {
   it('should create route with specific method', () => {
     const mockHandler: ton.TonHandler = jest.fn()
-    const get = ton.createRoute('get')
+    const get = ton.createRouteWith('get')
     get(mockApp, '/*', mockHandler)
     expect(mockApp.get).toBeCalledTimes(1)
     expect((mockApp.get as jest.Mock).mock.calls[0][0]).toBe('/*')
   })
 })
 
-describe('routes', () => {
+describe('pre set method route', () => {
   it('should create route with any method', () => {
     const mockHandler: ton.TonHandler = jest.fn()
-    const any = ton.createRoute('any')
+    const any = ton.createRouteWith('any')
     any(mockApp, '/*', mockHandler)
     expect(mockApp.any).toBeCalledTimes(1)
     expect((mockApp.any as jest.Mock).mock.calls[0][0]).toBe('/*')
@@ -130,7 +130,7 @@ describe('routes', () => {
 
   it('should create route with connect method', () => {
     const mockHandler: ton.TonHandler = jest.fn()
-    const connect = ton.createRoute('connect')
+    const connect = ton.createRouteWith('connect')
     connect(mockApp, '/*', mockHandler)
     expect(mockApp.connect).toBeCalledTimes(1)
     expect((mockApp.connect as jest.Mock).mock.calls[0][0]).toBe('/*')
@@ -138,7 +138,7 @@ describe('routes', () => {
 
   it('should create route with del method', () => {
     const mockHandler: ton.TonHandler = jest.fn()
-    const del = ton.createRoute('del')
+    const del = ton.createRouteWith('del')
     del(mockApp, '/*', mockHandler)
     expect(mockApp.del).toBeCalledTimes(1)
     expect((mockApp.del as jest.Mock).mock.calls[0][0]).toBe('/*')
@@ -146,7 +146,7 @@ describe('routes', () => {
 
   it('should create route with get method', () => {
     const mockHandler: ton.TonHandler = jest.fn()
-    const get = ton.createRoute('get')
+    const get = ton.createRouteWith('get')
     get(mockApp, '/*', mockHandler)
     expect(mockApp.get).toBeCalledTimes(1)
     expect((mockApp.get as jest.Mock).mock.calls[0][0]).toBe('/*')
@@ -154,7 +154,7 @@ describe('routes', () => {
 
   it('should create route with head method', () => {
     const mockHandler: ton.TonHandler = jest.fn()
-    const head = ton.createRoute('head')
+    const head = ton.createRouteWith('head')
     head(mockApp, '/*', mockHandler)
     expect(mockApp.head).toBeCalledTimes(1)
     expect((mockApp.head as jest.Mock).mock.calls[0][0]).toBe('/*')
@@ -162,7 +162,7 @@ describe('routes', () => {
 
   it('should create route with options method', () => {
     const mockHandler: ton.TonHandler = jest.fn()
-    const options = ton.createRoute('options')
+    const options = ton.createRouteWith('options')
     options(mockApp, '/*', mockHandler)
     expect(mockApp.options).toBeCalledTimes(1)
     expect((mockApp.options as jest.Mock).mock.calls[0][0]).toBe('/*')
@@ -170,7 +170,7 @@ describe('routes', () => {
 
   it('should create route with patch method', () => {
     const mockHandler: ton.TonHandler = jest.fn()
-    const patch = ton.createRoute('patch')
+    const patch = ton.createRouteWith('patch')
     patch(mockApp, '/*', mockHandler)
     expect(mockApp.patch).toBeCalledTimes(1)
     expect((mockApp.patch as jest.Mock).mock.calls[0][0]).toBe('/*')
@@ -178,7 +178,7 @@ describe('routes', () => {
 
   it('should create route with post method', () => {
     const mockHandler: ton.TonHandler = jest.fn()
-    const post = ton.createRoute('post')
+    const post = ton.createRouteWith('post')
     post(mockApp, '/*', mockHandler)
     expect(mockApp.post).toBeCalledTimes(1)
     expect((mockApp.post as jest.Mock).mock.calls[0][0]).toBe('/*')
@@ -186,7 +186,7 @@ describe('routes', () => {
 
   it('should create route with put method', () => {
     const mockHandler: ton.TonHandler = jest.fn()
-    const put = ton.createRoute('put')
+    const put = ton.createRouteWith('put')
     put(mockApp, '/*', mockHandler)
     expect(mockApp.put).toBeCalledTimes(1)
     expect((mockApp.put as jest.Mock).mock.calls[0][0]).toBe('/*')
@@ -194,10 +194,65 @@ describe('routes', () => {
 
   it('should create route with trace method', () => {
     const mockHandler: ton.TonHandler = jest.fn()
-    const trace = ton.createRoute('trace')
+    const trace = ton.createRouteWith('trace')
     trace(mockApp, '/*', mockHandler)
     expect(mockApp.trace).toBeCalledTimes(1)
     expect((mockApp.trace as jest.Mock).mock.calls[0][0]).toBe('/*')
+  })
+})
+
+describe('routes', () => {
+  it('should create routes with type TonRoutes', () => {
+    const endpoints: ton.TonRoutes = [
+      {
+        methods: 'any',
+        pattern: '/*',
+        handler: () => ''
+      },
+      {
+        methods: 'get',
+        pattern: '/ping',
+        handler: function ping() {
+          return 'pong'
+        }
+      }
+    ]
+    ton.routes(mockApp, endpoints, { logger: mockLogger })
+    expect(mockApp.any).toBeCalledTimes(1)
+    expect((mockApp.any as jest.Mock).mock.calls[0][0]).toBe('/*')
+    expect(mockApp.get).toBeCalledTimes(1)
+    expect((mockApp.get as jest.Mock).mock.calls[0][0]).toBe('/ping')
+  })
+
+  it('should create routes with type TonRoute', () => {
+    const endpoints: ton.TonRoute = {
+      methods: 'any',
+      pattern: '/you',
+      handler: () => ''
+    }
+    ton.routes(mockApp, endpoints, { logger: mockLogger })
+    ton.routes(mockApp, { methods: 'post', pattern: '/me' } as ton.TonRoute, {
+      logger: mockLogger
+    })
+    expect(mockApp.any).toBeCalledTimes(1)
+    expect((mockApp.any as jest.Mock).mock.calls[0][0]).toBe('/you')
+    expect(mockApp.post).toBeCalledTimes(1)
+    expect((mockApp.post as jest.Mock).mock.calls[0][0]).toBe('/me')
+  })
+
+  it('should create any routes with type TonHandler', () => {
+    const endpoints: ton.TonHandler = () => ''
+    ton.routes(mockApp, endpoints, { logger: mockLogger })
+    ton.routes(mockApp, () => '', { logger: mockLogger })
+    expect(mockApp.any).toBeCalledTimes(2)
+    expect((mockApp.any as jest.Mock).mock.calls[0][0]).toBe('/*')
+    expect((mockApp.any as jest.Mock).mock.calls[1][0]).toBe('/*')
+  })
+
+  it('should not create any routes with wrong type', () => {
+    const endpoints: any = ''
+    ton.routes(mockApp, endpoints as ton.TonHandler, { logger: mockLogger })
+    expect(mockApp.any).toBeCalledTimes(0)
   })
 })
 
