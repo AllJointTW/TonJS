@@ -11,7 +11,7 @@
     "@typescript-eslint/eslint-plugin" "^2.19.2"
     "@typescript-eslint/parser" "^2.19.2"
 
-"@alljoint-next/eslint-config@0.3.2":
+"@alljoint-next/eslint-config@0.3.2", "@alljoint-next/eslint-config@^0.3.2":
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/@alljoint-next/eslint-config/-/eslint-config-0.3.2.tgz#f90887b38d340164c6fb84251eabbc2d36d74ad5"
   integrity sha512-3fjdAcuM23M5JcdznUuhvrRzn5NCLyphEnnYaV3GKP+zkPrGcyEHmbpOYyFC/P3PK1PpXnaDWJRIy83IgL6xlg==

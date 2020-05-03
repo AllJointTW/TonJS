@@ -16,6 +16,7 @@
     "build": "yarn workspaces run build"
   },
   "devDependencies": {
+    "@alljoint-next/eslint-config": "^0.3.2",
     "@alljoint-next/eslint-config-typescript": "^0.3.0",
     "@alljoint-next/ts-config": "^0.1.2",
     "@commitlint/cli": "^8.3.5",
