@@ -435,7 +435,7 @@ export function routes(
   /* istanbul ignore next */
   { logger = tonLogger }: { logger?: TonLogger } = {}
 ) {
-  logger.debug('\nroutes:')
+  logger.debug('routes:')
 
   if (Array.isArray(endpoints)) {
     endpoints.forEach(item => {

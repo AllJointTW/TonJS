@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import {
   send,
   redirect,
@@ -7,6 +6,7 @@ import {
   registerGracefulShutdown,
   route
 } from '../packages/ton/src'
+import * as logger from '../packages/logger'
 
 const host = '0.0.0.0'
 const port = 3000
@@ -19,7 +19,7 @@ async function main() {
   )
   const token = await listen(app, host, port)
   registerGracefulShutdown(token)
-  console.info(`\nyou raise me up, to listen on http://${host}:${port}\n`)
+  logger.info(`\nyou raise me up, to listen on http://${host}:${port}\n`)
 }
 
 main()

@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import path from 'path'
 import {
   TonHandler,
@@ -8,12 +7,14 @@ import {
   createApp,
   listen,
   routes,
-  registerGracefulShutdown
+  registerGracefulShutdown,
+  TonApp
 } from '@tonjs/ton'
+import * as logger from '@tonjs/logger'
 
 import yargs = require('yargs')
 
-const { argv } = yargs
+export const parser = yargs
   .scriptName('ton')
   .usage('Usage: $0 <entry> <options>')
   .help()
@@ -63,23 +64,31 @@ const { argv } = yargs
     }
   })
 
-async function main() {
+export default async function main(
+  argv: any
+): Promise<{ app: TonApp; token: TonListenSocket }> {
   try {
+    logger.info('[Try Love TonJS]')
     const [entry = 'index.js'] = argv._
-    const app = createApp(argv)
     const endpoint: TonHandler | TonRoute | TonRoutes = (
       await import(path.resolve(process.cwd(), entry))
     ).default
-    routes(app, endpoint)
+    const app = createApp(argv)
+    routes(app, endpoint, { logger })
     const token: TonListenSocket = await listen(app, argv.host, argv.port)
     registerGracefulShutdown(token)
-    console.info(
-      `\nyou raise me up, to listen on http://${argv.host}:${argv.port}\n`
+    logger.info(
+      `you raise me up, to listen on http://${argv.host}:${argv.port}`
     )
+    return { app, token }
   } catch (err) {
-    console.info(`\nfailed to listen on ${argv.host}:${argv.port}\n`)
-    console.error(err)
+    logger.info(`failed to listen on ${argv.host}:${argv.port}`)
+    logger.error(err)
+    throw err
   }
 }
 
-main()
+/* istanbul ignore next */
+if (process.env.NODE_ENV !== 'test') {
+  main(parser.argv)
+}
