@@ -7,11 +7,12 @@ function isError(target: any): target is Error {
 }
 
 export enum LogLevel {
-  error = 0,
-  warn = 1,
-  info = 2,
-  debug = 3,
-  verbose = 4
+  silent = 0,
+  error = 1,
+  warn = 2,
+  info = 3,
+  debug = 4,
+  verbose = 5
 }
 
 export type LogColor = {
@@ -101,6 +102,7 @@ export function print(
  * const error = printWith({
  *   level: LogLevel.error,
  *   color: defaultColors.error
+ *   format: process.env.NODE_ENV !== 'production'
  * })
  * error('Hello World!')
  *
@@ -111,25 +113,30 @@ export function printWith(options: LogOptions) {
 
 export const error = printWith({
   level: LogLevel.error,
-  color: defaultColors.error
+  color: defaultColors.error,
+  format: process.env.NODE_ENV !== 'production'
 })
 
 export const warn = printWith({
   level: LogLevel.warn,
-  color: defaultColors.warn
+  color: defaultColors.warn,
+  format: process.env.NODE_ENV !== 'production'
 })
 
 export const info = printWith({
   level: LogLevel.info,
-  color: defaultColors.info
+  color: defaultColors.info,
+  format: process.env.NODE_ENV !== 'production'
 })
 
 export const debug = printWith({
   level: LogLevel.debug,
-  color: defaultColors.debug
+  color: defaultColors.debug,
+  format: process.env.NODE_ENV !== 'production'
 })
 
 export const verbose = printWith({
   level: LogLevel.verbose,
-  color: defaultColors.verbose
+  color: defaultColors.verbose,
+  format: process.env.NODE_ENV !== 'production'
 })
