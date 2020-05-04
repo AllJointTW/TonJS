@@ -21,7 +21,10 @@ export const parser = yargs
   .version()
   .alias('version', 'v')
   .epilogue('for more information, find our docs at https://tonjs.com')
-  .example('$0 index.js', 'listen on 0.0.0.0:3000 and index.js as the entry.')
+  .example(
+    '$0 index.js',
+    'listen on http://0.0.0.0:3000 and index.js as the entry.'
+  )
   .locale('en')
   .options({
     host: {
@@ -82,7 +85,7 @@ export default async function main(
     )
     return { app, token }
   } catch (err) {
-    logger.info(`failed to listen on ${argv.host}:${argv.port}`)
+    logger.info(`failed to listen on http://${argv.host}:${argv.port}`)
     logger.error(err)
     throw err
   }
