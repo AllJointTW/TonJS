@@ -1,9 +1,19 @@
 {
   "version": "0.0.0",
+  "npmClient": "yarn",
+  "useWorkspaces": true,
+  "conventionalCommits": true,
+  "exact": true,
+  "packages": ["packages/*"],
   "command": {
     "init": {
       "exact": true
+    },
+    "bootstrap": {
+      "hoist": true
+    },
+    "version": {
+      "conventionalCommits": true
     }
-  },
-  "packages": ["packages/*"]
+  }
 }
