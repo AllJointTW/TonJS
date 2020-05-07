@@ -1,7 +1,9 @@
 {
   "extends": "@alljoint-next/eslint-config",
-  "overrides": [{
-    "files": ["*.ts"],
-    "extends": "@alljoint-next/eslint-config-typescript"
-  }]
+  "overrides": [
+    {
+      "files": ["*.ts"],
+      "extends": "@alljoint-next/eslint-config-typescript"
+    }
+  ]
 }
