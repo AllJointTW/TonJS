@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.2](https://github.com/AllJointTW/TonJS/compare/v0.1.1...v0.1.2) (2020-05-07)
+
+
+### Bug Fixes
+
+* **bin:** help and version parse error ([ab3e4c2](https://github.com/AllJointTW/TonJS/commit/ab3e4c27fd95c8326a033521e081b0dbb8b6cab9))
+
+
+
+
+
 ## [0.1.1](https://github.com/AllJointTW/TonJS/compare/v0.1.0...v0.1.1) (2020-05-07)
 
 
