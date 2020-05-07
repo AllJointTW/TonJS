@@ -15,6 +15,8 @@ import * as logger from '@tonjs/logger'
 
 import yargs = require('yargs')
 
+export type TonBinInstance = { app: TonApp; token: TonListenSocket }
+
 export const parser = yargs
   .scriptName('ton')
   .usage('Usage: $0 <entry> <options>')
@@ -65,9 +67,7 @@ export const parser = yargs
     }
   })
 
-export default async function main(
-  argv: any
-): Promise<{ app: TonApp; token: TonListenSocket }> {
+export default async function main(argv: any): Promise<TonBinInstance | Error> {
   try {
     logger.info('[Try Love TonJS]')
     const [entry = 'index.js'] = argv._
@@ -90,7 +90,13 @@ export default async function main(
   }
 }
 
-/* istanbul ignore next */
-if (process.env.NODE_ENV !== 'test') {
+function bootstrap() {
+  /* istanbul ignore next */
+  if (process.env.NODE_ENV === 'test' || parser.help || parser.version) {
+    return
+  }
+  /* istanbul ignore next */
   main(parser.argv)
 }
+
+bootstrap()
