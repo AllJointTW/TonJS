@@ -36,7 +36,8 @@
   "author": "TZU-YEN, CHANG <try_love_tom@alljoint.tw>",
   "license": "GPL-3.0",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "prepublishOnly": "yarn build"
   },
   "dependencies": {
     "@tonjs/logger": "0.1.0",
