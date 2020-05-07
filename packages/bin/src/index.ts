@@ -21,21 +21,23 @@ export const parser = yargs
   .scriptName('ton')
   .usage('Usage: $0 <entry> <options>')
   .help()
+  .alias('help', 'h')
   .version()
   .alias('version', 'v')
   .epilogue('for more information, find our docs at https://tonjs.com')
-  .example('$0 index.js', 'listen on 0.0.0.0:3000 and index.js as the entry.')
+  .example(
+    '$0 index.js',
+    'listen on http://0.0.0.0:3000 and index.js as the entry.'
+  )
   .locale('en')
   .options({
     host: {
       type: 'string',
-      alias: 'h',
       desc: 'Specify the host name',
       default: '0.0.0.0'
     },
     port: {
       type: 'number',
-      alias: 'p',
       desc: 'Specify the port number',
       default: 3000
     },
