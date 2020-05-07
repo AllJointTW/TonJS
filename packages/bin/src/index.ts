@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import path from 'path'
 import {
   TonHandler,
@@ -84,7 +85,8 @@ export default async function main(
   } catch (err) {
     logger.info(`failed to listen on ${argv.host}:${argv.port}`)
     logger.error(err)
-    throw err
+    process.exit(1)
+    return err
   }
 }
 

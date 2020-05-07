@@ -4,22 +4,24 @@ import path from 'path'
 import { TonApp, TonListenSocket, close } from '@tonjs/ton'
 import bin from './index'
 
-let logLevel = process.env.LOG_LEVEL
-let instance: { app: TonApp; token: TonListenSocket }
+const logLevel = process.env.LOG_LEVEL
+process.env.LOG_LEVEL = 'silent'
 
-beforeAll(() => {
-  logLevel = process.env.LOG_LEVEL
-  process.env.LOG_LEVEL = 'silent'
-})
+let instance: { app: TonApp; token: TonListenSocket }
+const { exit } = process
 
 afterAll(() => {
   if (logLevel) {
     process.env.LOG_LEVEL = logLevel
+  } else {
+    delete process.env.LOG_LEVEL
   }
+  process.exit = exit
 })
 
 afterEach(() => {
   close(instance.token)
+  process.exit = jest.fn() as any
 })
 
 describe('e2e', () => {
@@ -111,12 +113,14 @@ describe('e2e', () => {
     expect(resPing.data).toEqual({ result: 'pong' })
   })
 
-  it('should use index.js as default entry', async () => {
-    try {
-      await bin({ host: '0.0.0.0', port: 4000, _: [] })
-    } catch (err) {
-      // eslint-disable-next-line jest/no-try-expect
-      expect(err.moduleName).toBe(path.resolve(process.cwd(), 'index.js'))
-    }
+  it(`should use index.js as default entry.
+index.js is missing, will exit with 1`, async () => {
+    const { exit } = process
+    process.exit = jest.fn() as any
+
+    const error: any = await bin({ host: '0.0.0.0', port: 4000, _: [] })
+    expect(process.exit).toBeCalledWith(1)
+    expect(error.moduleName).toBe(path.resolve(process.cwd(), 'index.js'))
+    process.exit = exit
   })
 })
