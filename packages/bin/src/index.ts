@@ -94,7 +94,11 @@ export default async function main(argv: any): Promise<TonBinInstance | Error> {
 
 function bootstrap() {
   /* istanbul ignore next */
-  if (process.env.NODE_ENV === 'test' || parser.help || parser.version) {
+  if (
+    process.env.NODE_ENV === 'test' ||
+    parser.argv.help ||
+    parser.argv.version
+  ) {
     return
   }
   /* istanbul ignore next */
