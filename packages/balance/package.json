@@ -1,6 +1,6 @@
 {
   "name": "@tonjs/balance",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "keywords": [
     "http",
     "benchmark",
@@ -40,6 +40,6 @@
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
-    "@tonjs/ton": "0.1.0"
+    "@tonjs/ton": "0.1.1"
   }
 }

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.1](https://github.com/AllJointTW/TonJS/compare/v0.1.0...v0.1.1) (2020-05-07)
+
+
+### Bug Fixes
+
+* **bin:** add the missing shebang ([6e0a21d](https://github.com/AllJointTW/TonJS/commit/6e0a21d8e2244931c2fbbf60b0ede7710c044a24))
+* **bin:** help and version script run with the main function ([3937ac9](https://github.com/AllJointTW/TonJS/commit/3937ac9dc279cd0ac04cbbcefed8f77af60fa9ed))
+
+
+
+
+
 # 0.1.0 (2020-05-07)
 
 
