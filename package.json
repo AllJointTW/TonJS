@@ -5,7 +5,7 @@
     "packages/logger",
     "packages/ton",
     "packages/bin",
-    "packages/*"
+    "packages/balance"
   ],
   "scripts": {
     "dev": "nodemon --watch '{packages,example}/**/*.ts' --ignore '{packages,example}/**/*.{spec,test}.ts' --exec 'ts-node'",
