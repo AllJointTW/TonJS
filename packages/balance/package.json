@@ -1,6 +1,6 @@
 {
   "name": "@tonjs/balance",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "keywords": [
     "http",
     "benchmark",
@@ -36,7 +36,6 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@tonjs/ton": "0.0.0"
-  },
-  "devDependencies": {}
+    "@tonjs/ton": "0.1.0"
+  }
 }

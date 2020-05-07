@@ -1,6 +1,6 @@
 {
   "name": "@tonjs/ton",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "keywords": [
     "http",
     "benchmark",
@@ -39,7 +39,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@tonjs/logger": "0.0.0",
+    "@tonjs/logger": "0.1.0",
     "bytes": "^3.1.0",
     "uWebSockets.js": "uNetworking/uWebSockets.js#v17.4.0"
   },
