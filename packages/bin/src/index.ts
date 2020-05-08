@@ -86,7 +86,7 @@ export default async function main(argv: any): Promise<TonBinInstance | Error> {
     return { app, token }
   } catch (err) {
     logger.info(`failed to listen on ${argv.host}:${argv.port}`)
-    logger.error(err)
+    logger.error(err.stack)
     process.exit(1)
     return err
   }
