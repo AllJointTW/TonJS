@@ -47,8 +47,20 @@ describe('readBuffer', () => {
     expect(result).toStrictEqual(chunk)
   })
 
-  it('should not read buffer if over limit', async () => {
+  it('should throw the 413 error, if buffer over limit', async () => {
     mockRes.onData = fn => {
+      fn(chunk, true)
+      return mockRes
+    }
+
+    await expect(ton.readBuffer(mockRes, { limit: '0b' })).rejects.toThrow(
+      ton.create4xxError(413, ton.TonStatusCodes[413])
+    )
+  })
+
+  it('should bypass the buffer concat, if buffer over limit', async () => {
+    mockRes.onData = fn => {
+      fn(chunk, true)
       fn(chunk, true)
       return mockRes
     }
@@ -92,7 +104,7 @@ describe('readText', () => {
     expect(result).toEqual(data)
   })
 
-  it('should not read buffer if over limit', async () => {
+  it('should throw 413 error, if buffer over limit', async () => {
     mockRes.onData = fn => {
       fn(chunk, true)
       return mockRes
@@ -137,7 +149,7 @@ describe('readJSON', () => {
     expect(result).toEqual(originalData)
   })
 
-  it('should not read buffer if over limit', async () => {
+  it('should throw 413 error, if buffer over limit', async () => {
     mockRes.onData = fn => {
       fn(chunk, true)
       return mockRes

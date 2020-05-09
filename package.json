@@ -8,7 +8,7 @@
     "packages/balance"
   ],
   "scripts": {
-    "dev": "nodemon --watch '{packages,example}/**/*.ts' --ignore '{packages,example}/**/*.{spec,test}.ts' --exec 'ts-node'",
+    "dev": "nodemon --watch '{packages,example}/**/*.{ts,js}' --ignore '{packages,example}/**/*.{spec,test}.{ts,js}' --exec 'ts-node'",
     "format": "prettier '**/*.{js,json,ts,md,yaml}' !**/dist/** !./dist/** !**/coverage/** --write --no-semi --single-quote && yarn lint --fix",
     "lint": "eslint '**/*.ts'",
     "test": "jest",

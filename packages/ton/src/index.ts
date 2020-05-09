@@ -330,7 +330,17 @@ export function readBuffer(
     let data = Buffer.allocUnsafe(0)
 
     res.onData((chunk, isLast) => {
-      data = Buffer.concat([data, Buffer.from(chunk)])
+      // bypass over size data, and wait for isLast flag
+      // https://github.com/uNetworking/uWebSockets.js/issues/307
+      if (data.length <= limitSize) {
+        data = Buffer.concat([data, Buffer.from(chunk)])
+      }
+
+      if (!isLast) {
+        return
+      }
+
+      // isLast
 
       if (data.length > limitSize) {
         const statusCode = 413
@@ -338,9 +348,7 @@ export function readBuffer(
         return
       }
 
-      if (isLast) {
-        resolve(data)
-      }
+      resolve(data)
     })
   })
 }
