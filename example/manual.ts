@@ -5,8 +5,8 @@ import {
   listen,
   registerGracefulShutdown,
   route
-} from '../packages/ton/src'
-import * as logger from '../packages/logger'
+} from '../packages/ton/dist'
+import * as logger from '../packages/logger/dist'
 
 const host = '0.0.0.0'
 const port = 3000

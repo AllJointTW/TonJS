@@ -1,7 +1,8 @@
+import { resolve } from 'path'
 import { createReadStream, statSync } from 'fs'
-import { TonHandler, TonStream, sendStream } from '../packages/ton/src'
+import { TonHandler, TonStream, sendStream } from '../packages/ton/dist'
 
-const target = 'README.md'
+const target = resolve(__dirname, 'sample.jpg')
 const { size } = statSync(target)
 const sendFile: TonHandler = (req, res) => {
   const stream: TonStream = createReadStream(target)
