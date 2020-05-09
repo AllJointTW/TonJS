@@ -314,16 +314,16 @@ export function send(
   sendJSON(res, statusCode, data as object, headers)
 }
 
-const defaultLimitSize = bytes.parse('1mb')
+const defaultLimitSize = bytes.parse('100kb')
 
 export function readBuffer(
   res: TonResponse,
-  { limit = '1mb' } = {}
+  { limit = '100kb' } = {}
 ): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     let limitSize = defaultLimitSize
 
-    if (limit !== '1mb') {
+    if (limit !== '100kb') {
       limitSize = bytes.parse(limit)
     }
 
@@ -347,7 +347,7 @@ export function readBuffer(
 
 export async function readText(
   res: TonResponse,
-  { limit = '1mb', encoding = 'utf-8' } = {}
+  { limit = '100kb', encoding = 'utf-8' } = {}
 ): Promise<string> {
   const body = await readBuffer(res, { limit })
   return body.toString(encoding)
@@ -355,7 +355,7 @@ export async function readText(
 
 export async function readJSON(
   res: TonResponse,
-  { limit = '1mb', encoding = 'utf-8' } = {}
+  { limit = '100kb', encoding = 'utf-8' } = {}
 ): Promise<any> {
   const body = await readText(res, { limit, encoding })
   try {
