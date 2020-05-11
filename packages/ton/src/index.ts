@@ -223,11 +223,18 @@ export function sendStream(
   })
 
   data.on('end', () => {
+    if (res.aborted) {
+      return
+    }
     res.aborted = true
     res.end()
   })
 
   data.on('data', chunk => {
+    if (res.aborted) {
+      return false
+    }
+
     const arrayBuffer = chunk.buffer.slice(
       chunk.byteOffset,
       chunk.byteOffset + chunk.byteLength
@@ -237,12 +244,13 @@ export function sendStream(
     const [firstTryOk, firstTryDone] = res.tryEnd(arrayBuffer, data.size)
 
     if (firstTryDone) {
+      res.aborted = true
       data.destroy()
-      return
+      return firstTryOk
     }
 
     if (firstTryOk) {
-      return
+      return firstTryOk
     }
 
     // pause because backpressure
@@ -263,10 +271,13 @@ export function sendStream(
 
       if (ok) {
         data.resume()
+        return ok
       }
 
       return ok
     })
+
+    return firstTryOk
   })
 }
 
@@ -315,6 +326,7 @@ export function send(
 }
 
 const defaultLimitSize = bytes.parse('100kb')
+const defaultFileLimitSize = bytes.parse('1mb')
 
 export function readBuffer(
   res: TonResponse,
@@ -371,6 +383,59 @@ export async function readJSON(
   } catch (err) {
     throw create4xxError(400, 'Invalid JSON', err)
   }
+}
+
+export function readStream(
+  req: TonRequest,
+  res: TonResponse,
+  { limit = '1mb' } = {}
+) {
+  let limitSize = defaultFileLimitSize
+
+  if (limit !== '1mb') {
+    limitSize = bytes.parse(limit)
+  }
+
+  const body: TonStream = new stream.Readable({
+    read() {
+      return true
+    }
+  })
+
+  let totalSize = 0
+  body.size = parseInt(req.getHeader('content-length'), 10) || 0
+
+  res.onData((chunk, isLast) => {
+    totalSize += chunk.byteLength
+
+    if (totalSize > body.size) {
+      body.size = totalSize
+    }
+
+    // bypass over size data, and wait for isLast flag
+    // https://github.com/uNetworking/uWebSockets.js/issues/307
+    if (body.size <= limitSize) {
+      // https://github.com/uNetworking/uWebSockets.js/issues/251
+      body.push(Buffer.concat([Buffer.from(chunk)]))
+    }
+
+    if (!isLast) {
+      return
+    }
+
+    // isLast
+
+    console.log(body.size > limitSize)
+
+    if (body.size > limitSize) {
+      const statusCode = 413
+      body.destroy(create4xxError(statusCode, TonStatusCodes[statusCode]))
+      return
+    }
+
+    body.push(null)
+  })
+  return body
 }
 
 export function handler(fn: TonHandler, options?: { logger: TonLogger }) {
