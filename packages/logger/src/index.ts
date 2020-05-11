@@ -41,29 +41,28 @@ export const defaultColors: LogColor = {
  */
 export function formatContext(context: any, format?: boolean) {
   if (!isObject(context)) {
-    return `${context}\n`
+    return context
   }
 
   if (!format) {
-    return `${JSON.stringify(context)}\n`
+    return `${JSON.stringify(context)}`
   }
 
-  return `${JSON.stringify(context, undefined, 2)}\n`
+  return `${JSON.stringify(context, undefined, 2)}`
 }
 
 /**
- * print the context with color
- * @param context something you want to print
- * @param color ansi code
+ * print the message in the color
+ * @param message something you want to print
+ * @param color ansi color code
  * @see https://en.wikipedia.org/wiki/ANSI_escape_code#3/4_bit
  */
-export function printWithColor(context: any, color?: string) {
+export function paintIn(message: string, color?: string) {
   if (!color) {
-    process.stdout.write(context)
-    return
+    return message
   }
 
-  process.stdout.write(`\u001B[${color}m${context}\u001B[m`)
+  return `\u001B[${color}m${message}\u001B[m`
 }
 
 export type LogOptions = {
@@ -74,24 +73,27 @@ export type LogOptions = {
 
 /**
  * print it, suggest use the `printWith` to create customer logger
- * @param param0 the options of logger
+ * @param options the options of logger
  * @param args something you want to print
  */
 export function print(
-  { level = LogLevel.debug, color, format }: LogOptions,
+  { level = LogLevel.debug, color, format }: LogOptions = {},
   ...args: any[]
 ) {
   if (level <= LogLevel[process.env.LOG_LEVEL || 'debug']) {
-    args.forEach(context => {
+    let output = ''
+    args.forEach((context, index) => {
       if (isError(context)) {
-        printWithColor(
-          formatContext(context.stack || context.message, format),
-          color
-        )
-        return
+        output += `${formatContext(context.stack, format)}`
+      } else {
+        output += `${formatContext(context, format)}`
       }
-      printWithColor(formatContext(context, format), color)
+
+      if (index < args.length - 1) {
+        output += ' '
+      }
     })
+    process.stdout.write(`${paintIn(output, color)}\n`)
   }
 }
 
