@@ -1,4 +1,6 @@
-import { TonHandler } from '../packages/ton/src'
+import cors from '../packages/cors/src'
 
-const single: TonHandler = () => ''
-export default single
+const yourHandler = () => ''
+const singleWithCors = cors()(yourHandler)
+
+export default singleWithCors
