@@ -16,7 +16,7 @@
     "tonjs",
     "async",
     "await",
-    "mico",
+    "micro",
     "microservice",
     "express",
     "koa",
