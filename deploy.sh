@@ -4,10 +4,10 @@
 set -e
 
 # 構建
-npm run docs:dev
+npm run docs:build
 
 # cd 到構建輸出的目錄下
-cd docs
+cd docs/.vuepress/dist
 
 # 部署到自定義域域名
 # echo 'tonjs.com' > CNAME
@@ -20,6 +20,6 @@ git commit -m 'deploy'
 # git push -f git@github.com:<USERNAME>/<USERNAME>.github.io.git master
 
 # 部署到 https://<USERNAME>.github.io/<REPO>
-git push -f git@github.com:AllJointTW/TonJS.git master:feature/vuepress
+git push -f git@github.com:AllJointTW/TonJS.git master:gh-pages
 
 cd -
