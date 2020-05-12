@@ -8,4 +8,5 @@ scopes:
   - ton
   - bin
   - logger
+  - cors
   - balance
