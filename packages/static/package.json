@@ -1,0 +1,29 @@
+{
+  "name": "static",
+  "version": "0.1.2",
+  "description": "> TODO: description",
+  "author": "Allen Hsieh <allen804337@gmail.com>",
+  "homepage": "https://github.com/AllJointTW/TonJS#readme",
+  "license": "GPL-3.0",
+  "main": "lib/static.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.yarnpkg.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AllJointTW/TonJS.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/AllJointTW/TonJS/issues"
+  }
+}
