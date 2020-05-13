@@ -59,8 +59,8 @@ export function addCorsWith(handler: TonHandler, options: CorsOptions) {
       )
     }
 
-    const preFlight = req.getMethod() === 'OPTIONS'
-    if (preFlight) {
+    // is preflight
+    if (req.getMethod() === 'OPTIONS') {
       res.writeHeader(
         'Access-Control-Allow-Methods',
         options.allowMethodsString
@@ -76,60 +76,60 @@ export function addCorsWith(handler: TonHandler, options: CorsOptions) {
   }
 }
 
-export default function cors(inputOption: CorsOptions = {}) {
+export default function cors(options: CorsOptions = {}) {
   return (
     endpoints: TonHandler | TonRoute | TonRoutes
   ): TonHandler | TonRoute | TonRoutes => {
-    const options: CorsOptions = {
+    const inputOptions: CorsOptions = {
       origins:
-        inputOption.origins ||
+        options.origins ||
         (process.env.CORS_WHITE_LIST || '')
           .split(',')
-          .map(el => el.trim())
-          .filter(el => !!el),
-      maxAge: inputOption.maxAge || defaultMaxAgeSeconds,
-      allowMethods: inputOption.allowMethods || defaultAllowMethods,
-      allowHeaders: inputOption.allowHeaders || defaultAllowHeaders,
+          .map(item => item.trim())
+          .filter(item => !!item),
+      maxAge: options.maxAge || defaultMaxAgeSeconds,
+      allowMethods: options.allowMethods || defaultAllowMethods,
+      allowHeaders: options.allowHeaders || defaultAllowHeaders,
       allowCredentials:
-        typeof inputOption.allowCredentials !== 'boolean'
+        typeof options.allowCredentials !== 'boolean'
           ? true
-          : inputOption.allowCredentials,
-      exposeHeaders: inputOption.exposeHeaders || []
+          : options.allowCredentials,
+      exposeHeaders: options.exposeHeaders || []
     }
-    options.allowMethodsString = options.allowMethods.join(',')
-    options.allowHeadersString = options.allowHeaders.join(',')
-    options.exposeHeadersString = options.exposeHeaders.join(',')
+
+    inputOptions.allowMethodsString = inputOptions.allowMethods.join(',')
+    inputOptions.allowHeadersString = inputOptions.allowHeaders.join(',')
+    inputOptions.exposeHeadersString = inputOptions.exposeHeaders.join(',')
+
+    // TonRoutes
     if (Array.isArray(endpoints)) {
       return endpoints.map(route => {
-        const handler = addCorsWith(route.handler, options)
+        const handler = addCorsWith(route.handler, inputOptions)
         Object.defineProperty(handler, 'name', {
           value: handler.name,
           writable: false,
           configurable: false
         })
-        return {
-          ...route,
-          handler
-        }
+        return { ...route, handler }
       })
     }
 
+    // TonRoute
     if (typeof endpoints === 'object' && endpoints !== null) {
-      const handler = addCorsWith(endpoints.handler, options)
+      const handler = addCorsWith(endpoints.handler, inputOptions)
       Object.defineProperty(handler, 'name', {
         value: handler.name,
         writable: false,
         configurable: false
       })
-      return {
-        ...endpoints,
-        handler
-      }
+      return { ...endpoints, handler }
     }
 
+    // TonHandler
     if (typeof endpoints === 'function') {
-      return addCorsWith(endpoints, options)
+      return addCorsWith(endpoints, inputOptions)
     }
+
     return undefined
   }
 }
