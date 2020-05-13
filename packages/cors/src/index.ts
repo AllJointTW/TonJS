@@ -4,7 +4,8 @@ import {
   TonRequest,
   TonData,
   TonRoute,
-  TonRoutes
+  TonRoutes,
+  getHandlerName
 } from '@tonjs/ton'
 
 export const defaultAllowMethods: string[] = [
@@ -27,7 +28,7 @@ export const defaultAllowHeaders: string[] = [
 
 export const defaultMaxAgeSeconds: number = 60 * 60 * 24 // 24 hours
 
-export declare type CorsOptions = {
+export declare type CORSOptions = {
   origins?: string[]
   maxAge?: number
   allowMethods?: string[]
@@ -39,8 +40,11 @@ export declare type CorsOptions = {
   exposeHeadersString?: string
 }
 
-export function addCorsWith(handler: TonHandler, options: CorsOptions) {
-  return function addCors(req: TonRequest, res: TonResponse): TonData | void {
+export function addCORSWith(
+  handler: TonHandler,
+  options: CORSOptions
+): TonHandler {
+  return function addCORS(req: TonRequest, res: TonResponse): TonData | void {
     const origin = req.getHeader('origin')
     if (options.origins.includes('*')) {
       res.writeHeader('Access-Control-Allow-Origin', '*')
@@ -76,24 +80,31 @@ export function addCorsWith(handler: TonHandler, options: CorsOptions) {
   }
 }
 
-export default function cors(options: CorsOptions = {}) {
-  return (
-    endpoints: TonHandler | TonRoute | TonRoutes
-  ): TonHandler | TonRoute | TonRoutes => {
-    const inputOptions: CorsOptions = {
+function isTonRoutes(target: any): target is TonRoutes {
+  return Array.isArray(target)
+}
+
+function isTonRoute(target: any): target is TonRoute {
+  return typeof target === 'object' && target !== null
+}
+
+function isTonHandler(target: any): target is TonHandler {
+  return typeof target === 'function'
+}
+
+export function createCORS(options: CORSOptions = {}) {
+  return <T extends TonHandler | TonRoute | TonRoutes>(endpoints: T): T => {
+    const inputOptions: CORSOptions = {
       origins:
         options.origins ||
-        (process.env.CORS_WHITE_LIST || '')
+        (process.env.CORS_ORIGINS || '')
           .split(',')
           .map(item => item.trim())
           .filter(item => !!item),
       maxAge: options.maxAge || defaultMaxAgeSeconds,
       allowMethods: options.allowMethods || defaultAllowMethods,
       allowHeaders: options.allowHeaders || defaultAllowHeaders,
-      allowCredentials:
-        typeof options.allowCredentials !== 'boolean'
-          ? true
-          : options.allowCredentials,
+      allowCredentials: options.allowCredentials === true,
       exposeHeaders: options.exposeHeaders || []
     }
 
@@ -102,32 +113,38 @@ export default function cors(options: CorsOptions = {}) {
     inputOptions.exposeHeadersString = inputOptions.exposeHeaders.join(',')
 
     // TonRoutes
-    if (Array.isArray(endpoints)) {
+    if (isTonRoutes(endpoints)) {
       return endpoints.map(route => {
-        const handler = addCorsWith(route.handler, inputOptions)
+        const handler = addCORSWith(route.handler, inputOptions)
         Object.defineProperty(handler, 'name', {
-          value: handler.name,
+          value: getHandlerName(route.handler),
           writable: false,
           configurable: false
         })
         return { ...route, handler }
-      })
+      }) as T
     }
 
     // TonRoute
-    if (typeof endpoints === 'object' && endpoints !== null) {
-      const handler = addCorsWith(endpoints.handler, inputOptions)
+    if (isTonRoute(endpoints)) {
+      const handler = addCORSWith(endpoints.handler, inputOptions)
       Object.defineProperty(handler, 'name', {
-        value: handler.name,
+        value: getHandlerName(endpoints.handler),
         writable: false,
         configurable: false
       })
-      return { ...endpoints, handler }
+      return { ...endpoints, handler } as T
     }
 
     // TonHandler
-    if (typeof endpoints === 'function') {
-      return addCorsWith(endpoints, inputOptions)
+    if (isTonHandler(endpoints)) {
+      const handler = addCORSWith(endpoints, inputOptions)
+      Object.defineProperty(handler, 'name', {
+        value: getHandlerName(endpoints),
+        writable: false,
+        configurable: false
+      })
+      return handler as T
     }
 
     return undefined

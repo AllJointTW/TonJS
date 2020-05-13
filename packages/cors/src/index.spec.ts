@@ -3,9 +3,11 @@ import {
   TonResponse,
   TonHandler,
   TonRoute,
-  TonRoutes
+  TonRoutes,
+  getHandlerName
 } from '@tonjs/ton'
-import createCors, {
+import {
+  createCORS,
   defaultAllowMethods,
   defaultAllowHeaders,
   defaultMaxAgeSeconds
@@ -42,83 +44,69 @@ beforeEach(() => {
   }
 })
 
-describe('cors', () => {
-  it('should not send cors header, if response is aborted', () => {
-    const cors = createCors()
+describe('createCORS', () => {
+  it('should not send CORS header, if response is aborted', () => {
+    const cors = createCORS()
     const handler: TonHandler = () => ''
-    const withCors = cors(handler) as TonHandler
+    const withCORS = cors(handler) as TonHandler
 
     mockRes.aborted = true
-    withCors(mockReq, mockRes)
+    withCORS(mockReq, mockRes)
 
-    expect(mockRes.writeHeader).toHaveBeenCalledWith(
-      'Access-Control-Allow-Credentials',
-      'true'
-    )
+    expect(mockRes.writeHeader).not.toHaveBeenCalled()
   })
 
   it(`should send 'Access-Control-Allow-Origin' header`, () => {
     const origin = 'https://tonjs.com'
-    const cors = createCors({
+    const cors = createCORS({
       origins: [origin]
     })
     const handler: TonHandler = () => ''
-    const withCors = cors(handler) as TonHandler
+    const withCORS = cors(handler) as TonHandler
 
     mockReq.getMethod = jest.fn(() => 'GET')
     mockReq.getHeader = jest.fn(() => origin)
-    withCors(mockReq, mockRes)
+    withCORS(mockReq, mockRes)
 
     expect(mockRes.writeHeader).toHaveBeenNthCalledWith(
       1,
       'Access-Control-Allow-Origin',
       origin
-    )
-    expect(mockRes.writeHeader).toHaveBeenNthCalledWith(
-      2,
-      'Access-Control-Allow-Credentials',
-      'true'
     )
   })
 
-  it('should not send cors header, if request method is not OPTIONS', async () => {
+  it('should not send CORS header, if request method is not OPTIONS', async () => {
     const origin = 'https://tonjs.com'
-    const cors = createCors({
+    const cors = createCORS({
       origins: [origin]
     })
     const handler: TonHandler = () => ''
-    const withCors = cors(handler) as TonHandler
+    const withCORS = cors(handler) as TonHandler
 
     mockReq.getHeader = jest.fn(() => origin)
-    const output = await withCors(mockReq, mockRes)
+    const output = await withCORS(mockReq, mockRes)
 
     expect(mockRes.writeHeader).toHaveBeenNthCalledWith(
       1,
       'Access-Control-Allow-Origin',
       origin
     )
-    expect(mockRes.writeHeader).toHaveBeenNthCalledWith(
-      2,
-      'Access-Control-Allow-Credentials',
-      'true'
-    )
-    expect(mockRes.writeHeader).toHaveBeenCalledTimes(2)
     expect(output).toBe('')
   })
 
   it(`should send 'Access-Control-Allow-Credentials' header, \
 if allowCredentials is true`, () => {
     const origin = 'https://tonjs.com'
-    const cors = createCors({
+    const cors = createCORS({
       origins: [origin],
       allowCredentials: true
     })
     const handler: TonHandler = () => ''
-    const withCors = cors(handler) as TonHandler
+    const withCORS = cors(handler) as TonHandler
 
     mockReq.getMethod = jest.fn(() => 'GET')
     mockReq.getHeader = jest.fn(() => origin)
-    withCors(mockReq, mockRes)
+    withCORS(mockReq, mockRes)
 
     expect(mockRes.writeHeader).toHaveBeenNthCalledWith(
       1,
@@ -135,16 +123,16 @@ if allowCredentials is true`, () => {
   it(`should not send 'Access-Control-Allow-Credentials' header, \
 if allowCredentials is false`, () => {
     const origin = 'https://tonjs.com'
-    const cors = createCors({
+    const cors = createCORS({
       origins: [origin],
       allowCredentials: false
     })
     const handler: TonHandler = () => ''
-    const withCors = cors(handler) as TonHandler
+    const withCORS = cors(handler) as TonHandler
 
     mockReq.getMethod = jest.fn(() => 'GET')
     mockReq.getHeader = jest.fn(() => origin)
-    withCors(mockReq, mockRes)
+    withCORS(mockReq, mockRes)
 
     expect(mockRes.writeHeader).toHaveBeenNthCalledWith(
       1,
@@ -161,16 +149,16 @@ if allowCredentials is false`, () => {
 if exposeHeaders has been set`, () => {
     const origin = 'https://tonjs.com'
     const exposeHeaders = ['x-my-header-1', 'x-my-header-2']
-    const cors = createCors({
+    const cors = createCORS({
       origins: [origin],
       exposeHeaders
     })
     const handler: TonHandler = () => ''
-    const withCors = cors(handler) as TonHandler
+    const withCORS = cors(handler) as TonHandler
 
     mockReq.getMethod = jest.fn(() => 'GET')
     mockReq.getHeader = jest.fn(() => origin)
-    withCors(mockReq, mockRes)
+    withCORS(mockReq, mockRes)
 
     expect(mockRes.writeHeader).toHaveBeenNthCalledWith(
       1,
@@ -179,11 +167,6 @@ if exposeHeaders has been set`, () => {
     )
     expect(mockRes.writeHeader).toHaveBeenNthCalledWith(
       2,
-      'Access-Control-Allow-Credentials',
-      'true'
-    )
-    expect(mockRes.writeHeader).toHaveBeenNthCalledWith(
-      3,
       'Access-Control-Expose-Headers',
       exposeHeaders.join(',')
     )
@@ -192,15 +175,15 @@ if exposeHeaders has been set`, () => {
   it(`should send 'Access-Control-Allow-Origin' header as '*', \
 if origins includes '*'`, () => {
     const origin = '*,https://tonjs.com'
-    const cors = createCors({
+    const cors = createCORS({
       origins: origin.split(',')
     })
     const handler: TonHandler = () => ''
-    const withCors = cors(handler) as TonHandler
+    const withCORS = cors(handler) as TonHandler
 
     mockReq.getMethod = jest.fn(() => 'GET')
     mockReq.getHeader = jest.fn(() => origin)
-    withCors(mockReq, mockRes)
+    withCORS(mockReq, mockRes)
 
     expect(mockRes.writeHeader).toHaveBeenNthCalledWith(
       1,
@@ -212,63 +195,57 @@ if origins includes '*'`, () => {
   it(`should send 'Access-Control-Allow-Methods, Access-Control-Allow-Headers, Access-Control-Max-Age' header, \
 if request method is OPTIONS`, () => {
     const origin = 'https://tonjs.com'
-    const cors = createCors({
+    const cors = createCORS({
       origins: [origin]
     })
     const handler: TonHandler = () => ''
-    const withCors = cors(handler) as TonHandler
+    const withCORS = cors(handler) as TonHandler
 
     mockReq.getMethod = jest.fn(() => 'OPTIONS')
     mockReq.getHeader = jest.fn(() => origin)
-    withCors(mockReq, mockRes)
+    withCORS(mockReq, mockRes)
 
     expect(mockRes.writeHeader).toHaveBeenNthCalledWith(
       1,
       'Access-Control-Allow-Origin',
       'https://tonjs.com'
     )
-
     expect(mockRes.writeHeader).toHaveBeenNthCalledWith(
       2,
-      'Access-Control-Allow-Credentials',
-      'true'
-    )
-    expect(mockRes.writeHeader).toHaveBeenNthCalledWith(
-      3,
       'Access-Control-Allow-Methods',
       defaultAllowMethods.join(',')
     )
     expect(mockRes.writeHeader).toHaveBeenNthCalledWith(
-      4,
+      3,
       'Access-Control-Allow-Headers',
       defaultAllowHeaders.join(',')
     )
     expect(mockRes.writeHeader).toHaveBeenNthCalledWith(
-      5,
+      4,
       'Access-Control-Max-Age',
       String(defaultMaxAgeSeconds)
     )
   })
 
   it(`should do nothing, if handler is null`, () => {
-    const cors = createCors()
-    const withCors = cors(null)
-    expect(withCors).toBeUndefined()
+    const cors = createCORS()
+    const withCORS = cors(null)
+    expect(withCORS).toBeUndefined()
   })
 
-  it(`should replace handler , if give addCors a route`, () => {
+  it(`should replace handler , if give addCORS a route`, () => {
     const route: TonRoute = {
       methods: 'get',
       pattern: '/',
       handler: () => 'Hi There!'
     }
     const routeName = route.handler.name
-    const cors = createCors()
-    const withCors = cors(route) as TonRoute
-    expect(withCors.handler.name).not.toEqual(routeName)
+    const cors = createCORS()
+    const withCORS = cors(route) as TonRoute
+    expect(withCORS.handler.name).not.toEqual(routeName)
   })
 
-  it(`should replace all handler , if give addCors routes`, () => {
+  it(`should replace all handler, if give addCORS routes`, () => {
     const routes: TonRoutes = [
       {
         methods: 'get',
@@ -290,12 +267,12 @@ if request method is OPTIONS`, () => {
     ]
     const nameBucket = []
     routes.forEach(route => {
-      nameBucket.push(route.handler.name)
+      nameBucket.push(getHandlerName(route.handler))
     })
-    const cors = createCors()
-    const withCors = cors(routes) as TonRoutes
+    const CORS = createCORS()
+    const withCORS = CORS(routes) as TonRoutes
     for (let i = 0; i < nameBucket.length; i += 1) {
-      expect(nameBucket[i]).not.toEqual(withCors[i].handler.name)
+      expect(nameBucket[i]).toEqual(withCORS[i].handler.name)
     }
   })
 })
