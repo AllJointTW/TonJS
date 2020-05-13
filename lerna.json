@@ -4,9 +4,7 @@
   "useWorkspaces": true,
   "conventionalCommits": true,
   "exact": true,
-  "packages": [
-    "packages/*"
-  ],
+  "packages": ["packages/*"],
   "command": {
     "init": {
       "exact": true
