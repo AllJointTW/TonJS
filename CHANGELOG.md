@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0](https://github.com/AllJointTW/TonJS/compare/v0.1.2...v0.2.0) (2020-05-13)
+
+
+* refactor!: make the all argument in same logger, print in the one line ([9215054](https://github.com/AllJointTW/TonJS/commit/92150545f1e10013b692fa2802f7bb4903398790))
+
+
+### BREAKING CHANGES
+
+* rename the printWithColor to printIn, and make the all argument print in one line
+
+
+
+
+
 ## [0.1.2](https://github.com/AllJointTW/TonJS/compare/v0.1.1...v0.1.2) (2020-05-07)
 
 ### Bug Fixes
