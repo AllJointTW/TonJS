@@ -43,6 +43,7 @@
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
-    "@tonjs/ton": "0.1.1"
+    "@tonjs/ton": "0.1.1",
+    "mime": "^2.4.5"
   }
 }
