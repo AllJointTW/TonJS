@@ -14,7 +14,9 @@ const port = 3000
 
 async function main() {
   const app = createApp()
-  const staticServer = createStatic({})
+  const staticServer = createStatic({
+    root: `${process.cwd()}/example`
+  })
   route(app, 'get', '/', (req, res) => send(res, 200, 'TonJS'))
   route(app, 'get', '/redirect', (req, res) =>
     redirect(res, 302, 'https://tonjs.com')
