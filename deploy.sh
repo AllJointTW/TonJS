@@ -10,7 +10,7 @@ npm run docs:build
 cd docs/.vuepress/dist
 
 # 部署到自定義域域名
-# echo 'tonjs.com' > CNAME
+echo 'tonjs.com' > CNAME
 
 git init
 git add -A
