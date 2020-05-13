@@ -10,16 +10,19 @@ import {
   sendStream
 } from '@tonjs/ton'
 import { createReadStream, statSync, existsSync } from 'fs'
+import { getType } from 'mime/lite'
 
 declare type StaticOption = {
   root?: string
   index?: string
 }
 
-export function createStaticStream(path: string) {
+export function sendStaticStream(path: string, res: TonResponse) {
   const stream: TonStream = createReadStream(path)
   stream.size = statSync(path).size
-  return stream
+  sendStream(res, 200, stream, {
+    'Content-Type': getType(path)
+  })
 }
 
 export function staticHandler(root: string, index: string) {
@@ -34,8 +37,7 @@ export function staticHandler(root: string, index: string) {
         sendError(res, create4xxError(404, TonStatusCodes[404]))
         return
       }
-      const result = createStaticStream(path)
-      sendStream(res, 200, result)
+      sendStaticStream(path, res)
       return
     }
     sendError(res, create4xxError(404, TonStatusCodes[404]))
