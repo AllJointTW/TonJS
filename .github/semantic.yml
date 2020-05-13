@@ -9,3 +9,4 @@ scopes:
   - bin
   - logger
   - balance
+  - static
