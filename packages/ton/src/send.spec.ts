@@ -418,7 +418,7 @@ describe('sendStream', () => {
     )
   })
 
-  it('should destroy stream, if res is on Aborted', () => {
+  it('should destroy stream, if response is on aborted', () => {
     mockRes.onAborted = jest.fn(fn => {
       fn()
       return mockRes
@@ -442,6 +442,25 @@ describe('sendStream', () => {
     mockStream.emit('end')
     expect(mockRes.end).toHaveBeenCalledTimes(1)
     expect(mockRes.aborted).toBe(true)
+  })
+
+  it(`should not repeat end the response, \
+if stream is end but response is on aborted`, () => {
+    mockRes.tryEnd = jest.fn(() => [false, true])
+    ton.sendStream(mockRes, 201, mockStream)
+
+    mockRes.aborted = true
+    mockStream.emit('end')
+    expect(mockRes.end).toHaveBeenCalledTimes(0)
+  })
+
+  it('should not send the stream, if response is on abroted', () => {
+    mockRes.tryEnd = jest.fn()
+    ton.sendStream(mockRes, 201, mockStream)
+
+    mockRes.aborted = true
+    mockStream.emit('data', buffer)
+    expect(mockRes.tryEnd).toHaveBeenCalledTimes(0)
   })
 
   it('should destroy the stream, if done in first try', () => {
