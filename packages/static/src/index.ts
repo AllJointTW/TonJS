@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { join } from 'path'
 import {
   TonRequest,
   TonResponse,
@@ -29,7 +29,7 @@ export function staticHandler(root: string, index: string) {
       if (index && path[path.length - 1] === '/') {
         path += index
       }
-      path = resolve(root, index)
+      path = join(root, path)
       if (!existsSync(path)) {
         sendError(res, create4xxError(404, TonStatusCodes[404]))
         return
@@ -44,7 +44,7 @@ export function staticHandler(root: string, index: string) {
 
 export function createStatic(options: StaticOption) {
   return (): TonHandler => {
-    const { root = '', index = 'index.html' } = options
+    const { root = process.cwd(), index = 'index.html' } = options
     return staticHandler(root, index)
   }
 }
