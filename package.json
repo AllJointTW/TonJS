@@ -5,6 +5,7 @@
     "packages/logger",
     "packages/ton",
     "packages/bin",
+    "packages/cors",
     "packages/balance"
   ],
   "scripts": {

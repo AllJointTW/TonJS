@@ -5,7 +5,7 @@ import {
   listen,
   registerGracefulShutdown,
   route
-} from '../packages/ton/src'
+} from '../packages/ton'
 import * as logger from '../packages/logger'
 
 const host = '0.0.0.0'
