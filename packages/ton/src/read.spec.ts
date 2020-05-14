@@ -1,12 +1,30 @@
 import * as ton from './index'
 
+let mockReq: ton.TonRequest
 let mockRes: ton.TonResponse
 
 const originalData = { key: 'value' }
 const data = JSON.stringify(originalData)
 const chunk = Buffer.from(data)
+const chunkIndex = [0, 1, 2, 3, 4]
+const splitChunk = chunkIndex.reduce((acc, curr) => {
+  const start = (data.length * curr) / chunkIndex.length
+  const end = (data.length * (curr + 1)) / chunkIndex.length
+  acc.push(Buffer.from(data.substring(start, end)))
+  return acc
+}, [])
 
 beforeEach(() => {
+  mockReq = {
+    getHeader: jest.fn(),
+    getMethod: jest.fn(),
+    getParameter: jest.fn(),
+    getQuery: jest.fn(),
+    getUrl: jest.fn(),
+    forEach: jest.fn(),
+    setYield: jest.fn()
+  }
+
   mockRes = {
     aborted: false,
     writeStatus: jest.fn(),
@@ -169,5 +187,20 @@ describe('readJSON', () => {
     await expect(ton.readJSON(mockRes)).rejects.toThrow(
       ton.create4xxError(400, 'Invalid JSON')
     )
+  })
+})
+
+describe('readStream', () => {
+  it('should read as stream', () => {
+    let count = 0
+    mockReq.getHeader = jest.fn(() => {
+      return chunk.length.toString()
+    })
+    mockRes.onData = fn => {
+      fn(splitChunk[count], count === chunkIndex.length - 1)
+      count += 1
+      return mockRes
+    }
+    ton.readStream(mockReq, mockRes)
   })
 })

@@ -7,33 +7,26 @@ import {
   sendError,
   TonError,
   TonRoutes,
-  sendEmpty,
-  readText,
   sendText
 } from '../packages/ton/src'
 import { error } from '../packages/logger/dist'
 
 const uploadFile: TonHandler = async (req, res) => {
-  const text = await readText(res, { limit: '10mb' })
-  console.log(text)
-  sendEmpty(res)
-  // const target = resolve(__dirname, 'temp.jpg')
-  // const bodyStream = readStream(req, res, { limit: '10mb' })
-  // const fileStream = createWriteStream(target)
+  const target = resolve(__dirname, 'temp.jpg')
+  const bodyStream = readStream(req, res, { limit: '10mb' })
+  const fileStream = createWriteStream(target)
 
-  // req.forEach(console.log)
-
-  // bodyStream
-  //   .on('error', (err: Error | TonError) => {
-  //     sendError(res, err)
-  //     fileStream.destroy()
-  //     unlinkSync(target) // delete the file
-  //   })
-  //   .on('end', () => {
-  //     sendJSON(res, 202, { message: 'success' }) // Accepted
-  //   })
-  //   .pipe(fileStream)
-  //   .on('error', error)
+  bodyStream
+    .on('error', (err: Error | TonError) => {
+      sendError(res, err)
+      fileStream.destroy()
+      unlinkSync(target) // delete the file
+    })
+    .on('end', () => {
+      sendJSON(res, 202, { message: 'success' }) // Accepted
+    })
+    .pipe(fileStream)
+    .on('error', error)
 }
 const index: TonHandler = (req, res) => {
   const html = `
