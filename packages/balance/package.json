@@ -1,6 +1,6 @@
 {
   "name": "@tonjs/balance",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "keywords": [
     "http",
     "benchmark",
@@ -13,7 +13,7 @@
     "tonjs",
     "async",
     "await",
-    "mico",
+    "micro",
     "microservice",
     "express",
     "koa",
@@ -40,6 +40,6 @@
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
-    "@tonjs/ton": "0.1.1"
+    "@tonjs/ton": "0.2.0"
   }
 }

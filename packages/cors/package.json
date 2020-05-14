@@ -1,5 +1,5 @@
 {
-  "name": "@tonjs/logger",
+  "name": "@tonjs/cors",
   "version": "0.2.0",
   "keywords": [
     "http",
@@ -20,7 +20,7 @@
     "hapi",
     "nest"
   ],
-  "description": "The logger of tonjs.",
+  "description": "The cors module of tonjs.",
   "engines": {
     "node": ">=12.x"
   },
@@ -33,10 +33,13 @@
     "access": "public"
   },
   "repository": "git@github.com:AllJointTW/TonJS.git",
-  "author": "TZU-YEN, CHANG <try_love_tom@alljoint.tw>",
+  "author": "Allen Hsieh <allen@alljoint.tw>",
   "license": "GPL-3.0",
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "yarn build"
+  },
+  "dependencies": {
+    "@tonjs/ton": "0.2.0"
   }
 }

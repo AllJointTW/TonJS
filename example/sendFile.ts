@@ -1,6 +1,6 @@
 import { resolve } from 'path'
 import { createReadStream, statSync } from 'fs'
-import { TonHandler, TonStream, sendStream } from '../packages/ton/dist'
+import { TonHandler, TonStream, sendStream } from '../packages/ton'
 
 const target = resolve(__dirname, 'sample.jpg')
 const { size } = statSync(target)
