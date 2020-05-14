@@ -425,8 +425,6 @@ export function readStream(
 
     // isLast
 
-    console.log(body.size > limitSize)
-
     if (body.size > limitSize) {
       const statusCode = 413
       body.destroy(create4xxError(statusCode, TonStatusCodes[statusCode]))
