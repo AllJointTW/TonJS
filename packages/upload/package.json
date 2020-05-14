@@ -42,5 +42,8 @@
   "dependencies": {
     "@tonjs/ton": "0.2.0",
     "busboy": "^0.3.1"
+  },
+  "devDependencies": {
+    "@types/busboy": "^0.2.3"
   }
 }

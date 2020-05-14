@@ -2,37 +2,37 @@ import { createWriteStream, unlinkSync } from 'fs'
 import { resolve } from 'path'
 import {
   TonHandler,
-  readStream,
+  TonRoutes,
+  sendText,
   sendJSON,
   sendError,
-  TonError,
-  TonRoutes,
-  sendText
-} from '../packages/ton/src'
-import { error } from '../packages/logger/dist'
+  create4xxError
+} from '../packages/ton/src/index'
+import { readFile } from '../packages/upload/src/index'
 
 const uploadFile: TonHandler = async (req, res) => {
   const target = resolve(__dirname, 'temp.jpg')
-  const bodyStream = readStream(req, res, { limit: '10mb' })
-  const fileStream = createWriteStream(target)
-
-  bodyStream
-    .on('error', (err: Error | TonError) => {
-      sendError(res, err)
-      fileStream.destroy()
-      unlinkSync(target) // delete the file
-    })
-    .on('end', () => {
-      sendJSON(res, 202, { message: 'success' }) // Accepted
-    })
-    .pipe(fileStream)
-    .on('error', error)
+  const writeStream = createWriteStream(target)
+  try {
+    const file = await readFile(req, res, { limit: '10mb' })
+    file.stream.pipe(writeStream)
+    if (!file.name) {
+      sendError(
+        res,
+        create4xxError(422, 'Missing File', { [file.field]: 'required' })
+      )
+      return
+    }
+    sendJSON(res, 202, { message: 'success' }) // Accepted
+  } catch (err) {
+    sendError(res, err)
+    unlinkSync(target)
+  }
 }
-const index: TonHandler = (req, res) => {
+const uploadPage: TonHandler = (req, res) => {
   const html = `
 <form method="post" action="/files" enctype="multipart/form-data">
   <input type="file" name="file" /><br>
-  <input type="text" name="name" value="ton" /><br>
   <input type="submit" />
 </form>
 `
@@ -47,7 +47,7 @@ const routes: TonRoutes = [
   {
     methods: 'get',
     pattern: '/',
-    handler: index
+    handler: uploadPage
   }
 ]
 

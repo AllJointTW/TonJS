@@ -1545,6 +1545,13 @@
   dependencies:
     "@babel/types" "^7.3.0"
 
+"@types/busboy@^0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@types/busboy/-/busboy-0.2.3.tgz#6697ad29873246c530f09a3ff5a40861824230d5"
+  integrity sha1-ZpetKYcyRsUw8Jo/9aQIYYJCMNU=
+  dependencies:
+    "@types/node" "*"
+
 "@types/bytes@^3.1.0":
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/@types/bytes/-/bytes-3.1.0.tgz#835a3e4aea3b4d7604aca216a78de372bff3ecc3"
