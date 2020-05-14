@@ -7,10 +7,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package @tonjs/ton
 
-
-
-
-
 ## [0.1.1](https://github.com/AllJointTW/TonJS/compare/v0.1.0...v0.1.1) (2020-05-07)
 
 **Note:** Version bump only for package @tonjs/ton
