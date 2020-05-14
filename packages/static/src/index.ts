@@ -22,7 +22,7 @@ export function sendStaticStream(path: string, res: TonResponse) {
   const stream: TonStream = createReadStream(path)
   stream.size = statSync(path).size
   sendStream(res, 200, stream, {
-    'Content-Type': getType(path)
+    'Content-Type': getType(path) || 'application/octet-stream'
   })
 }
 
@@ -32,6 +32,12 @@ export function createStaticHandler(options: StaticOption) {
   return (req: TonRequest, res: TonResponse): TonHandler => {
     if (req.getMethod() === 'head' || req.getMethod() === 'get') {
       let path = req.getUrl()
+      try {
+        path = decodeURIComponent(path)
+      } catch (err) {
+        sendError(res, create4xxError(404, TonStatusCodes[404]))
+        return
+      }
       if (enableDefaultIndex && index && path[path.length - 1] === '/') {
         path += index
       }
