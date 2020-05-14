@@ -64,7 +64,11 @@ describe('sendStaticStream', () => {
     sendStaticStream(mockPath, mockRes)
     expect(mockRes.writeStatus).toHaveBeenCalledTimes(0)
     expect(mockRes.writeHeader).toHaveBeenCalledTimes(1)
-    expect(mockRes.writeHeader).toHaveBeenNthCalledWith(1, 'Content-Type', null)
+    expect(mockRes.writeHeader).toHaveBeenNthCalledWith(
+      1,
+      'Content-Type',
+      'application/octet-stream'
+    )
   })
 })
 
@@ -94,6 +98,19 @@ describe('createStaticHandler', () => {
       1,
       'Content-Type',
       'application/javascript'
+    )
+  })
+
+  it('should return 404 response, if path name not valid', () => {
+    const staticHandler = buildStaticHandler(
+      'get',
+      '/%E4%B8%AD%E696%87.txt',
+      true
+    )
+    staticHandler(mockReq, mockRes)
+    expect(mockRes.writeStatus).toHaveBeenCalledTimes(1)
+    expect(mockRes.writeStatus).toHaveBeenCalledWith(
+      `404 ${TonStatusCodes[404]}`
     )
   })
 
