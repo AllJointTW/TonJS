@@ -433,6 +433,7 @@ export function readStream(
 
     body.push(null)
   })
+
   return body
 }
 

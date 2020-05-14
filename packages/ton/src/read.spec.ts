@@ -7,7 +7,7 @@ const originalData = { key: 'value' }
 const data = JSON.stringify(originalData)
 const chunk = Buffer.from(data)
 const chunkIndex = [0, 1, 2, 3, 4]
-const splitChunk = chunkIndex.reduce((acc, curr) => {
+const splitChunk: Buffer[] = chunkIndex.reduce((acc, curr) => {
   const start = (data.length * curr) / chunkIndex.length
   const end = (data.length * (curr + 1)) / chunkIndex.length
   acc.push(Buffer.from(data.substring(start, end)))
@@ -191,16 +191,85 @@ describe('readJSON', () => {
 })
 
 describe('readStream', () => {
-  it('should read as stream', () => {
-    let count = 0
+  it('should read as stream', async () => {
     mockReq.getHeader = jest.fn(() => {
       return chunk.length.toString()
     })
     mockRes.onData = fn => {
-      fn(splitChunk[count], count === chunkIndex.length - 1)
-      count += 1
+      for (let pushCount = 0; pushCount < chunkIndex.length; pushCount += 1) {
+        fn(splitChunk[pushCount], pushCount === chunkIndex.length - 1)
+      }
       return mockRes
     }
-    ton.readStream(mockReq, mockRes)
+    return new Promise(done => {
+      let receiveCount = 0
+      const stream = ton.readStream(mockReq, mockRes)
+      stream.on('data', receiveChunk => {
+        expect(receiveChunk.toString()).toBe(
+          splitChunk[receiveCount].toString()
+        )
+        receiveCount += 1
+        if (receiveCount < splitChunk.length) {
+          done()
+        }
+      })
+    })
+  })
+
+  it('should return null, if read of body stream be called.', async () => {
+    const stream = ton.readStream(mockReq, mockRes)
+    expect(stream.read()).toBe(null)
+  })
+
+  it('should set the body size dynamic, if content length is fake', async () => {
+    mockReq.getHeader = jest.fn(() => {
+      return (chunk.length - 10).toString()
+    })
+    mockRes.onData = fn => {
+      for (let pushCount = 0; pushCount < chunkIndex.length; pushCount += 1) {
+        fn(splitChunk[pushCount], pushCount === chunkIndex.length - 1)
+      }
+      return mockRes
+    }
+    return new Promise(done => {
+      let receiveCount = 0
+      const stream = ton.readStream(mockReq, mockRes)
+      stream.on('data', () => {
+        receiveCount += 1
+        if (receiveCount < splitChunk.length) {
+          expect(stream.size).toBe(chunk.length)
+          done()
+        }
+      })
+    })
+  })
+
+  it(`should throw the 413 error and bypass the redundant chunk, \
+if stream size is bigger than size`, async () => {
+    mockReq.getHeader = jest.fn(() => {
+      return chunk.length.toString()
+    })
+    mockRes.onData = fn => {
+      for (let pushCount = 0; pushCount < chunkIndex.length; pushCount += 1) {
+        fn(splitChunk[pushCount], pushCount === chunkIndex.length - 1)
+      }
+      return mockRes
+    }
+    return new Promise(done => {
+      let totalReceiveChunk = Buffer.allocUnsafe(0)
+      const targetChunkIndex = 3
+      const stream = ton.readStream(mockReq, mockRes, {
+        limit: `${(chunk.length * targetChunkIndex) / 5}b`
+      })
+      stream.on('error', (err: ton.TonError) => {
+        expect(err.statusCode).toBe(413)
+        expect(err.message).toBe(ton.TonStatusCodes[413])
+        expect(totalReceiveChunk.toString()).toBe('')
+        done()
+      })
+      stream.on('data', receiveChunk => {
+        totalReceiveChunk = Buffer.concat([...totalReceiveChunk, receiveChunk])
+      })
+    })
   })
 })
