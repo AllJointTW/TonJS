@@ -32,24 +32,31 @@ export function createStaticHandler(options: StaticOption) {
   return (req: TonRequest, res: TonResponse): TonHandler => {
     if (req.getMethod() === 'head' || req.getMethod() === 'get') {
       let path = req.getUrl()
+      // handle special char
       try {
         path = decodeURIComponent(path)
       } catch (err) {
         sendError(res, create4xxError(404, TonStatusCodes[404]))
         return
       }
+      // set default index file
       if (enableDefaultIndex && index && path[path.length - 1] === '/') {
         path += index
       }
       path = join(root, path)
+
+      // file not found
       if (!existsSync(path)) {
         sendError(res, create4xxError(404, TonStatusCodes[404]))
         return
       }
+
+      // reject directory path
       if (path[path.length - 1] === '/') {
         sendError(res, create4xxError(404, TonStatusCodes[404]))
         return
       }
+
       sendStaticStream(path, res)
       return
     }
