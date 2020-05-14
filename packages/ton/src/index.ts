@@ -223,11 +223,18 @@ export function sendStream(
   })
 
   data.on('end', () => {
+    if (res.aborted) {
+      return
+    }
     res.aborted = true
     res.end()
   })
 
   data.on('data', chunk => {
+    if (res.aborted) {
+      return false
+    }
+
     const arrayBuffer = chunk.buffer.slice(
       chunk.byteOffset,
       chunk.byteOffset + chunk.byteLength
@@ -237,12 +244,13 @@ export function sendStream(
     const [firstTryOk, firstTryDone] = res.tryEnd(arrayBuffer, data.size)
 
     if (firstTryDone) {
+      res.aborted = true
       data.destroy()
-      return
+      return firstTryOk
     }
 
     if (firstTryOk) {
-      return
+      return firstTryOk
     }
 
     // pause because backpressure
@@ -263,10 +271,13 @@ export function sendStream(
 
       if (ok) {
         data.resume()
+        return ok
       }
 
       return ok
     })
+
+    return firstTryOk
   })
 }
 
@@ -314,23 +325,34 @@ export function send(
   sendJSON(res, statusCode, data as object, headers)
 }
 
-const defaultLimitSize = bytes.parse('1mb')
+const defaultLimitSize = bytes.parse('100kb')
+const defaultFileLimitSize = bytes.parse('1mb')
 
 export function readBuffer(
   res: TonResponse,
-  { limit = '1mb' } = {}
+  { limit = '100kb' } = {}
 ): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     let limitSize = defaultLimitSize
 
-    if (limit !== '1mb') {
+    if (limit !== '100kb') {
       limitSize = bytes.parse(limit)
     }
 
     let data = Buffer.allocUnsafe(0)
 
     res.onData((chunk, isLast) => {
-      data = Buffer.concat([data, Buffer.from(chunk)])
+      // bypass over size data, and wait for isLast flag
+      // https://github.com/uNetworking/uWebSockets.js/issues/307
+      if (data.length <= limitSize) {
+        data = Buffer.concat([data, Buffer.from(chunk)])
+      }
+
+      if (!isLast) {
+        return
+      }
+
+      // isLast
 
       if (data.length > limitSize) {
         const statusCode = 413
@@ -338,16 +360,14 @@ export function readBuffer(
         return
       }
 
-      if (isLast) {
-        resolve(data)
-      }
+      resolve(data)
     })
   })
 }
 
 export async function readText(
   res: TonResponse,
-  { limit = '1mb', encoding = 'utf-8' } = {}
+  { limit = '100kb', encoding = 'utf-8' } = {}
 ): Promise<string> {
   const body = await readBuffer(res, { limit })
   return body.toString(encoding)
@@ -355,7 +375,7 @@ export async function readText(
 
 export async function readJSON(
   res: TonResponse,
-  { limit = '1mb', encoding = 'utf-8' } = {}
+  { limit = '100kb', encoding = 'utf-8' } = {}
 ): Promise<any> {
   const body = await readText(res, { limit, encoding })
   try {
@@ -363,6 +383,58 @@ export async function readJSON(
   } catch (err) {
     throw create4xxError(400, 'Invalid JSON', err)
   }
+}
+
+export function readStream(
+  req: TonRequest,
+  res: TonResponse,
+  { limit = '1mb' } = {}
+) {
+  let limitSize = defaultFileLimitSize
+
+  if (limit !== '1mb') {
+    limitSize = bytes.parse(limit)
+  }
+
+  const body: TonStream = new stream.Readable({
+    read() {
+      return true
+    }
+  })
+
+  let totalSize = 0
+  body.size = parseInt(req.getHeader('content-length'), 10) || 0
+
+  res.onData((chunk, isLast) => {
+    totalSize += chunk.byteLength
+
+    if (totalSize > body.size) {
+      body.size = totalSize
+    }
+
+    // bypass over size data, and wait for isLast flag
+    // https://github.com/uNetworking/uWebSockets.js/issues/307
+    if (body.size <= limitSize) {
+      // https://github.com/uNetworking/uWebSockets.js/issues/251
+      body.push(Buffer.concat([Buffer.from(chunk)]))
+    }
+
+    if (!isLast) {
+      return
+    }
+
+    // isLast
+
+    if (body.size > limitSize) {
+      const statusCode = 413
+      body.destroy(create4xxError(statusCode, TonStatusCodes[statusCode]))
+      return
+    }
+
+    body.push(null)
+  })
+
+  return body
 }
 
 export function handler(fn: TonHandler, options?: { logger: TonLogger }) {
