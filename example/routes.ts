@@ -1,4 +1,4 @@
-import { TonRoutes, redirect, sendText } from '../packages/ton/src'
+import { TonRoutes, redirect, sendText } from '../packages/ton'
 
 const routes: TonRoutes = [
   {

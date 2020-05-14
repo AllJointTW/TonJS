@@ -5,7 +5,7 @@ import {
   listen,
   registerGracefulShutdown,
   route
-} from '../packages/ton/src'
+} from '../packages/ton'
 import * as logger from '../packages/logger'
 import { createStaticHandler } from '../packages/static/src'
 

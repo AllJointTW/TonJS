@@ -1,6 +1,6 @@
 {
   "name": "@tonjs/bin",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "keywords": [
     "http",
     "benchmark",
@@ -43,8 +43,8 @@
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
-    "@tonjs/logger": "0.1.1",
-    "@tonjs/ton": "0.1.1",
+    "@tonjs/logger": "0.2.0",
+    "@tonjs/ton": "0.2.0",
     "yargs": "^15.3.1"
   },
   "devDependencies": {
