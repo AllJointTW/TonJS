@@ -73,9 +73,10 @@ describe('createStaticHandler', () => {
     methodType: string,
     route: string,
     doFileExists: boolean,
-    root?: string
+    root?: string,
+    enableDefaultIndex?: boolean
   ): TonHandler => {
-    const defultOptions = { root }
+    const defultOptions = { root, enableDefaultIndex }
     const staticHandler = createStaticHandler(defultOptions)
 
     mockReq.getMethod = jest.fn(() => methodType)
@@ -118,6 +119,22 @@ describe('createStaticHandler', () => {
     buildStaticHandler('get', requetRoute, true, rootPath)(mockReq, mockRes)
     expect(fs.existsSync).toHaveBeenCalledWith(
       join(rootPath, `${requetRoute}index.html`)
+    )
+  })
+
+  it(`should return 404 response, when path is not a file and not enable default index file`, () => {
+    const rootPath = '/public'
+    const requetRoute = '/index/'
+    buildStaticHandler(
+      'get',
+      requetRoute,
+      true,
+      rootPath,
+      false
+    )(mockReq, mockRes)
+    expect(mockRes.writeStatus).toHaveBeenCalledTimes(1)
+    expect(mockRes.writeStatus).toHaveBeenCalledWith(
+      `404 ${TonStatusCodes[404]}`
     )
   })
 
