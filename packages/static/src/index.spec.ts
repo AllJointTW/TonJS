@@ -122,7 +122,7 @@ describe('createStaticHandler', () => {
     )
   })
 
-  it(`should return 404 response, when path is not a file and not enable default index file`, () => {
+  it(`should return 404 response, when path is not a file and disable default index file`, () => {
     const rootPath = '/public'
     const requetRoute = '/index/'
     buildStaticHandler(
