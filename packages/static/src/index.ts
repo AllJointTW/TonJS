@@ -12,7 +12,7 @@ import {
 import { createReadStream, statSync, existsSync } from 'fs'
 import { getType } from 'mime/lite'
 
-declare type StaticOption = {
+export type StaticOption = {
   root?: string
   index?: string
 }
@@ -25,8 +25,9 @@ export function sendStaticStream(path: string, res: TonResponse) {
   })
 }
 
-export function staticHandler(root: string, index: string) {
-  return async function addStaticstatic(req: TonRequest, res: TonResponse) {
+export function createStaticHandler(options: StaticOption) {
+  const { root = process.cwd(), index = 'index.html' } = options
+  return (req: TonRequest, res: TonResponse): TonHandler => {
     if (req.getMethod() === 'head' || req.getMethod() === 'get') {
       let path = req.getUrl()
       if (index && path[path.length - 1] === '/') {
@@ -41,12 +42,5 @@ export function staticHandler(root: string, index: string) {
       return
     }
     sendError(res, create4xxError(404, TonStatusCodes[404]))
-  }
-}
-
-export function createStatic(options: StaticOption) {
-  return (): TonHandler => {
-    const { root = process.cwd(), index = 'index.html' } = options
-    return staticHandler(root, index)
   }
 }
