@@ -104,6 +104,14 @@ describe('createStaticHandler', () => {
     )
   })
 
+  it('should return 404 response, if path is not a file', () => {
+    buildStaticHandler('post', '/index', true, './')(mockReq, mockRes)
+    expect(mockRes.writeStatus).toHaveBeenCalledTimes(1)
+    expect(mockRes.writeStatus).toHaveBeenCalledWith(
+      `404 ${TonStatusCodes[404]}`
+    )
+  })
+
   it('should find default index file, if request url with a slash at the end', () => {
     const rootPath = '/public'
     const requetRoute = '/index/'
