@@ -6,7 +6,8 @@ module.exports = {
   themeConfig: {
     sidebarDepth: 0,
     sidebar: [
-      ['/']
+      '/',
+      '/cors/'
     ],
     nav: [
       { text: 'Home', link: '/' },
