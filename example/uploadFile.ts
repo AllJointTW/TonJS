@@ -19,10 +19,8 @@ const uploadFile: TonHandler = async (req, res) => {
   // when all type of fields is not file, will file.stream be undefined
   // when file of field is missing, file.name will be undefined
   if (!file.stream || !file.name) {
-    sendError(
-      res,
-      create4xxError(422, 'Missing File', { [file.field]: 'required' })
-    )
+    sendError(res, create4xxError(422, 'Missing File', { file: 'required' }))
+
     file.stream.destroy()
     writeStream.destroy()
     return
@@ -43,7 +41,7 @@ const uploadFile: TonHandler = async (req, res) => {
 const uploadPage: TonHandler = (req, res) => {
   const html = `
 <form method="post" action="/files" enctype="multipart/form-data">
-  <input type="text" name="name" /><br>
+  <input type="file" name="file" /><br>
   <input type="submit" />
 </form>
 `
