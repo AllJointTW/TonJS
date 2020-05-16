@@ -1,5 +1,6 @@
 import { createWriteStream, unlinkSync } from 'fs'
-import { resolve } from 'path'
+import { join } from 'path'
+import { pipeline } from 'stream'
 import {
   TonHandler,
   TonRoutes,
@@ -7,32 +8,42 @@ import {
   sendJSON,
   sendError,
   create4xxError
-} from '../packages/ton/src/index'
-import { readFile } from '../packages/upload/src/index'
+} from '../packages/ton'
+import { readFileStream } from '../packages/upload'
 
 const uploadFile: TonHandler = async (req, res) => {
-  const target = resolve(__dirname, 'temp.jpg')
-  const writeStream = createWriteStream(target)
-  try {
-    const file = await readFile(req, res, { limit: '10mb' })
-    file.stream.pipe(writeStream)
-    if (!file.name) {
-      sendError(
-        res,
-        create4xxError(422, 'Missing File', { [file.field]: 'required' })
-      )
+  const temp = join(__dirname, '/temp/sample.jpg')
+  const writeStream = createWriteStream(temp)
+  const file = await readFileStream(req, res, { limit: '10mb' })
+
+  // when all type of fields is not file, will file.stream be undefined
+  // when file of field is missing, file.name will be undefined
+  if (!file.stream || !file.name) {
+    sendError(
+      res,
+      create4xxError(422, 'Missing File', { [file.field]: 'required' })
+    )
+    file.stream.destroy()
+    writeStream.destroy()
+    return
+  }
+
+  pipeline(file.stream, writeStream, err => {
+    if (err) {
+      sendError(res, err)
+      file.stream.destroy()
+      writeStream.destroy()
+      unlinkSync(temp)
       return
     }
-    sendJSON(res, 202, { message: 'success' }) // Accepted
-  } catch (err) {
-    sendError(res, err)
-    unlinkSync(target)
-  }
+
+    sendJSON(res, 201, { message: 'Success' }) // Created
+  })
 }
 const uploadPage: TonHandler = (req, res) => {
   const html = `
 <form method="post" action="/files" enctype="multipart/form-data">
-  <input type="file" name="file" /><br>
+  <input type="text" name="name" /><br>
   <input type="submit" />
 </form>
 `
