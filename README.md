@@ -1,6 +1,8 @@
 # TonJS
 
-> The Node.js Web Framework Can Do A Ton Of Request
+> The node.js web framework build for ton of request.
+
+![Testing](https://github.com/AllJointTW/TonJS/workflows/Testing/badge.svg)
 
 ## Usage
 
