@@ -12,7 +12,7 @@ import {
 import { readFileStream } from '../packages/upload'
 
 const uploadFile: TonHandler = async (req, res) => {
-  const temp = join(__dirname, '/temp/sample.jpg')
+  const temp = join(__dirname, 'temp/sample.jpg')
   const writeStream = createWriteStream(temp)
   const file = await readFileStream(req, res, { limit: '10mb' })
 
