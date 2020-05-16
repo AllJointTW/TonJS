@@ -23,7 +23,7 @@
     "hapi",
     "nest"
   ],
-  "description": "The Node.js Web Framework For A Ton Of Request",
+  "description": "The node.js web framework build for ton of request.",
   "engines": {
     "node": ">=12.x"
   },

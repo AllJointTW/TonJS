@@ -5,12 +5,7 @@ module.exports = {
   repo: 'https://github.com/AllJointTW/TonJS',
   themeConfig: {
     sidebarDepth: 0,
-    sidebar: [
-      '/',
-      '/cors/'
-    ],
-    nav: [
-      { text: 'Home', link: '/' },
-    ]
+    sidebar: ['/', '/cors/'],
+    nav: [{ text: 'Home', link: '/' }]
   }
 }
