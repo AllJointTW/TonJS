@@ -221,6 +221,21 @@ describe('sendJSON', () => {
   })
 })
 
+describe('unwrapError', () => {
+  const message = "Uncaught TypeError: Cannot read property 'c' of undefined"
+  const errorNormal = new Error(message)
+  const error400 = ton.create4xxError(400, ton.TonStatusCodes[400])
+  const error500 = ton.create5xxError(500, ton.TonStatusCodes[500], errorNormal)
+
+  it('should unwrap the error, if it has original', () => {
+    expect(ton.unwrapError(error500)).toBe(errorNormal)
+  })
+
+  it("should get the same error, if it doesn't has original", () => {
+    expect(ton.unwrapError(error400)).toBe(error400)
+  })
+})
+
 describe('sendError', () => {
   const originalNodeEnv = process.env.NODE_ENV
   const message = "Uncaught TypeError: Cannot read property 'c' of undefined"
@@ -232,13 +247,13 @@ describe('sendError', () => {
     process.env.NODE_ENV = originalNodeEnv
   })
 
-  it('should not send anything, if response is aborted', () => {
+  it('should not send anything and log the original error, if response is aborted', () => {
     mockRes.aborted = true
     ton.sendError(mockRes, errorNormal, undefined, { logger: mockLogger })
 
     expect(mockLogger.error).toHaveBeenCalledTimes(1)
     expect(mockLogger.error).toHaveBeenCalledWith(
-      ton.create5xxError(500, "Can't send anything after response was aborted")
+      ton.create5xxError(500, message)
     )
   })
 

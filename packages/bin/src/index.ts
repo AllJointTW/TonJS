@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import path from 'path'
+import { join } from 'path'
 import {
   TonHandler,
   TonRoute,
@@ -74,7 +74,7 @@ export default async function main(argv: any): Promise<TonBinInstance | Error> {
     logger.info('[Try Love TonJS]')
     const [entry = 'index.js'] = argv._
     const endpoint: TonHandler | TonRoute | TonRoutes = (
-      await import(path.resolve(process.cwd(), entry))
+      await import(join(process.cwd(), entry))
     ).default
     const app = createApp(argv)
     routes(app, endpoint, { logger })
