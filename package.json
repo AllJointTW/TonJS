@@ -10,12 +10,14 @@
     "packages/balance"
   ],
   "scripts": {
-    "dev": "nodemon --watch '{packages,example}/**/*.ts' --ignore '{packages,example}/**/*.{spec,test}.ts' --exec 'ts-node'",
+    "dev": "nodemon --watch '{packages,example}/**/*.{ts,js}' --ignore '{packages,example}/**/*.{spec,test}.{ts,js}' --exec 'ts-node'",
     "format": "prettier '**/*.{js,json,ts,md,yaml}' !**/dist/** !./dist/** !**/coverage/** --write --no-semi --single-quote && yarn lint --fix",
     "lint": "eslint '**/*.ts'",
     "test": "jest",
     "clean": "rimraf coverage packages/*/dist",
-    "build": "yarn workspaces run build"
+    "build": "yarn workspaces run build",
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs"
   },
   "devDependencies": {
     "@alljoint-next/eslint-config": "^0.3.2",
@@ -35,6 +37,7 @@
     "rimraf": "^3.0.2",
     "ts-jest": "^25.4.0",
     "ts-node": "^8.6.2",
-    "typescript": "^3.8.2"
+    "typescript": "^3.8.2",
+    "vuepress": "^1.5.0"
   }
 }

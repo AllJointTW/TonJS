@@ -221,6 +221,21 @@ describe('sendJSON', () => {
   })
 })
 
+describe('unwrapError', () => {
+  const message = "Uncaught TypeError: Cannot read property 'c' of undefined"
+  const errorNormal = new Error(message)
+  const error400 = ton.create4xxError(400, ton.TonStatusCodes[400])
+  const error500 = ton.create5xxError(500, ton.TonStatusCodes[500], errorNormal)
+
+  it('should unwrap the error, if it has original', () => {
+    expect(ton.unwrapError(error500)).toBe(errorNormal)
+  })
+
+  it("should get the same error, if it doesn't has original", () => {
+    expect(ton.unwrapError(error400)).toBe(error400)
+  })
+})
+
 describe('sendError', () => {
   const originalNodeEnv = process.env.NODE_ENV
   const message = "Uncaught TypeError: Cannot read property 'c' of undefined"
@@ -232,13 +247,13 @@ describe('sendError', () => {
     process.env.NODE_ENV = originalNodeEnv
   })
 
-  it('should not send anything, if response is aborted', () => {
+  it('should not send anything and log the original error, if response is aborted', () => {
     mockRes.aborted = true
     ton.sendError(mockRes, errorNormal, undefined, { logger: mockLogger })
 
     expect(mockLogger.error).toHaveBeenCalledTimes(1)
     expect(mockLogger.error).toHaveBeenCalledWith(
-      ton.create5xxError(500, "Can't send anything after response was aborted")
+      ton.create5xxError(500, message)
     )
   })
 
@@ -418,7 +433,7 @@ describe('sendStream', () => {
     )
   })
 
-  it('should destroy stream, if res is on Aborted', () => {
+  it('should destroy stream, if response is on aborted', () => {
     mockRes.onAborted = jest.fn(fn => {
       fn()
       return mockRes
@@ -442,6 +457,25 @@ describe('sendStream', () => {
     mockStream.emit('end')
     expect(mockRes.end).toHaveBeenCalledTimes(1)
     expect(mockRes.aborted).toBe(true)
+  })
+
+  it(`should not repeat end the response, \
+if stream is end but response is on aborted`, () => {
+    mockRes.tryEnd = jest.fn(() => [false, true])
+    ton.sendStream(mockRes, 201, mockStream)
+
+    mockRes.aborted = true
+    mockStream.emit('end')
+    expect(mockRes.end).toHaveBeenCalledTimes(0)
+  })
+
+  it('should not send the stream, if response is on abroted', () => {
+    mockRes.tryEnd = jest.fn()
+    ton.sendStream(mockRes, 201, mockStream)
+
+    mockRes.aborted = true
+    mockStream.emit('data', buffer)
+    expect(mockRes.tryEnd).toHaveBeenCalledTimes(0)
   })
 
   it('should destroy the stream, if done in first try', () => {

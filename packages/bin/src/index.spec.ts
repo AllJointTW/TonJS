@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import axios from 'axios'
-import path from 'path'
+import { join } from 'path'
 import { close } from '@tonjs/ton'
 import bin, { TonBinInstance } from './index'
 
@@ -116,7 +116,7 @@ describe('e2e', () => {
   it(`should use index.js as default entry.
 index.js is missing, will exit with 1`, async () => {
     const error: any = await bin({ host: '0.0.0.0', port: 4000, _: [] })
-    expect(error.moduleName).toBe(path.resolve(process.cwd(), 'index.js'))
+    expect(error.moduleName).toBe(join(process.cwd(), 'index.js'))
     expect(process.exit).toBeCalledWith(1)
   })
 })
