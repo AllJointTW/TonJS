@@ -5,9 +5,9 @@ titleAndCommits: true
 allowMergeCommits: true
 # You can define a list of valid scopes
 scopes:
+  - logger
   - ton
   - bin
-  - logger
   - cors
-  - balance
   - static
+  - balance
