@@ -17,6 +17,7 @@ async function main() {
   route(app, 'get', '/redirect', (req, res) =>
     redirect(res, 302, 'https://tonjs.com')
   )
+  route(app, 'any', '/ping', () => 'pong')
   const token = await listen(app, host, port)
   registerGracefulShutdown(token)
   logger.info(`\nyou raise me up, to listen on http://${host}:${port}\n`)
