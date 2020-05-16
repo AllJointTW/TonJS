@@ -158,6 +158,13 @@ export function sendJSON(
   res.end(JSON.stringify(data))
 }
 
+export function unwrapError(error: TonError) {
+  if (error.original) {
+    return error.original
+  }
+  return error
+}
+
 export function sendError(
   res: TonResponse,
   err: TonError | Error,
@@ -168,7 +175,7 @@ export function sendError(
   try {
     checkIsNotAborted(res)
   } catch (abortedError) {
-    logger.error(abortedError)
+    logger.error(unwrapError(err as TonError))
     return
   }
 
@@ -188,11 +195,7 @@ export function sendError(
     return
   }
 
-  if (error.original) {
-    logger.error(error.original)
-  } else {
-    logger.error(error)
-  }
+  logger.error(unwrapError(error))
 }
 
 export function sendStream(
