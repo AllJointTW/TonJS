@@ -6,6 +6,7 @@
     "packages/ton",
     "packages/bin",
     "packages/cors",
+    "packages/catapult",
     "packages/balance"
   ],
   "scripts": {

@@ -9,4 +9,5 @@ scopes:
   - bin
   - logger
   - cors
+  - catapult
   - balance

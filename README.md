@@ -59,11 +59,11 @@
 
 ### Common Scripts
 
-**project**
+**module**
 
 ```sh
-# create the new project
-yarn lerna create project-name
+# create the new module
+yarn lerna create module-name
 ```
 
 **package**
