@@ -2,7 +2,7 @@
 
 > The node.js web framework build for ton of request.
 
-![Testing](https://github.com/AllJointTW/TonJS/workflows/Testing/badge.svg)
+[![Quality](https://img.shields.io/codacy/grade/03060eb3070e4bab9db9a9751eda056b)](https://www.codacy.com/gh/AllJointTW/TonJS?utm_source=github.com&utm_medium=referral&utm_content=AllJointTW/TonJS&utm_campaign=Badge_Grade) [![Coverage](https://img.shields.io/codacy/coverage/03060eb3070e4bab9db9a9751eda056b)](https://www.codacy.com/gh/AllJointTW/TonJS?utm_source=github.com&utm_medium=referral&utm_content=AllJointTW/TonJS&utm_campaign=Badge_Coverage) ![Testing](https://img.shields.io/github/workflow/status/AllJointTW/TonJS/Testing) ![License](https://img.shields.io/npm/l/@tonjs/ton) ![Version](https://img.shields.io/npm/v/@tonjs/ton) ![Size](https://img.shields.io/bundlephobia/min/@tonjs/ton) [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat)](https://github.com/prettier/prettier) ![npm](https://img.shields.io/npm/dw/@tonjs/ton)
 
 ## Usage
 
