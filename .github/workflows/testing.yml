@@ -44,5 +44,9 @@ jobs:
         run: yarn lint
         timeout-minutes: 5
       - name: Test Your Code
-        run: yarn test
+        run: yarn test --coverage
         timeout-minutes: 5
+      - name: Send The Coverage To Codacy
+        run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report --language TypeScript --force-language -r coverage/lcov.info
+        env:
+          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
