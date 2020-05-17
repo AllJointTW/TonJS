@@ -1,5 +1,7 @@
 # TonJS
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/39c4456684d1475287b47f7abc269c10)](https://app.codacy.com/gh/AllJointTW/TonJS?utm_source=github.com&utm_medium=referral&utm_content=AllJointTW/TonJS&utm_campaign=Badge_Grade_Settings)
+
 > The node.js web framework build for ton of request.
 
 ![Testing](https://github.com/AllJointTW/TonJS/workflows/Testing/badge.svg)
