@@ -384,7 +384,7 @@ export async function readJSON(
   try {
     return JSON.parse(body)
   } catch (err) {
-    throw create4xxError(400, 'Invalid JSON', err)
+    throw create4xxError(400, 'Invalid JSON')
   }
 }
 
