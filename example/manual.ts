@@ -7,14 +7,14 @@ import {
   route
 } from '../packages/ton'
 import * as logger from '../packages/logger'
-import { createStaticHandler } from '../packages/static/src'
+import { createStatic } from '../packages/static/src'
 
 const host = '0.0.0.0'
 const port = 3000
 
 async function main() {
   const app = createApp()
-  const staticServer = createStaticHandler({
+  const staticServer = createStatic({
     root: `${process.cwd()}/example`
   })
   route(app, 'get', '/', (req, res) => send(res, 200, 'TonJS'))

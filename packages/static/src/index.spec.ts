@@ -3,7 +3,7 @@ import fs from 'fs'
 import { Readable } from 'stream'
 import { TonRequest, TonResponse, TonStatusCodes, TonStream } from '@tonjs/ton'
 import { TonHandler } from '@tonjs/ton/src'
-import { sendStaticStream, createStaticHandler } from './index'
+import { createHandler, createStatic, createStaticStream } from './index'
 
 jest.mock('fs')
 
@@ -38,7 +38,7 @@ beforeEach(() => {
   }
 })
 
-describe('sendStaticStream', () => {
+describe('createStaticStream', () => {
   let mockStream: TonStream = new Readable()
   const buffer = Buffer.from('asdf')
   const mockPath = 'mockPath'
@@ -61,19 +61,13 @@ describe('sendStaticStream', () => {
         size: 123
       } as any
     })
-    sendStaticStream(mockPath, mockRes)
-    expect(mockRes.writeStatus).toHaveBeenCalledTimes(0)
-    expect(mockRes.writeHeader).toHaveBeenCalledTimes(1)
-    expect(mockRes.writeHeader).toHaveBeenNthCalledWith(
-      1,
-      'Content-Type',
-      'application/octet-stream'
-    )
+    const stream = createStaticStream(mockPath)
+    expect(stream.size).toBe(123)
   })
 })
 
-describe('createStaticHandler', () => {
-  const buildStaticHandler = (
+describe('createStatic, createStaticStream', () => {
+  const buildHandlerWithOptions = (
     methodType: string,
     route: string,
     doFileExists: boolean,
@@ -81,7 +75,7 @@ describe('createStaticHandler', () => {
     enableDefaultIndex?: boolean
   ): TonHandler => {
     const defultOptions = { root, enableDefaultIndex }
-    const staticHandler = createStaticHandler(defultOptions)
+    const staticHandler = createStatic(defultOptions)
 
     mockReq.getMethod = jest.fn(() => methodType)
     mockReq.getUrl = jest.fn(() => route)
@@ -90,7 +84,7 @@ describe('createStaticHandler', () => {
   }
 
   it('should send a response with content type', () => {
-    const staticHandler = buildStaticHandler('get', '/index.js', true)
+    const staticHandler = buildHandlerWithOptions('get', '/index.js', true)
     staticHandler(mockReq, mockRes)
     expect(mockRes.writeStatus).toHaveBeenCalledTimes(0)
     expect(mockRes.writeHeader).toHaveBeenCalledTimes(1)
@@ -102,7 +96,7 @@ describe('createStaticHandler', () => {
   })
 
   it('should return 404 response, if path name not valid', () => {
-    const staticHandler = buildStaticHandler(
+    const staticHandler = buildHandlerWithOptions(
       'get',
       '/%E4%B8%AD%E696%87.txt',
       true
@@ -115,7 +109,7 @@ describe('createStaticHandler', () => {
   })
 
   it('should return 404 response, if request method is not get or head', () => {
-    buildStaticHandler('post', '/index.js', true, './')(mockReq, mockRes)
+    buildHandlerWithOptions('post', '/index.js', true, './')(mockReq, mockRes)
     expect(mockRes.writeStatus).toHaveBeenCalledTimes(1)
     expect(mockRes.writeStatus).toHaveBeenCalledWith(
       `404 ${TonStatusCodes[404]}`
@@ -123,7 +117,7 @@ describe('createStaticHandler', () => {
   })
 
   it('should return 404 response, if path is not a file', () => {
-    buildStaticHandler('post', '/index', true, './')(mockReq, mockRes)
+    buildHandlerWithOptions('post', '/index', true, './')(mockReq, mockRes)
     expect(mockRes.writeStatus).toHaveBeenCalledTimes(1)
     expect(mockRes.writeStatus).toHaveBeenCalledWith(
       `404 ${TonStatusCodes[404]}`
@@ -133,7 +127,12 @@ describe('createStaticHandler', () => {
   it('should find default index file, if request url with a slash at the end', () => {
     const rootPath = '/public'
     const requetRoute = '/index/'
-    buildStaticHandler('get', requetRoute, true, rootPath)(mockReq, mockRes)
+    buildHandlerWithOptions(
+      'get',
+      requetRoute,
+      true,
+      rootPath
+    )(mockReq, mockRes)
     expect(fs.existsSync).toHaveBeenCalledWith(
       join(rootPath, `${requetRoute}index.html`)
     )
@@ -142,7 +141,7 @@ describe('createStaticHandler', () => {
   it(`should return 404 response, when path is not a file and disable default index file`, () => {
     const rootPath = '/public'
     const requetRoute = '/index/'
-    buildStaticHandler(
+    buildHandlerWithOptions(
       'get',
       requetRoute,
       true,
@@ -158,10 +157,34 @@ describe('createStaticHandler', () => {
   it('should return 404 response, if file not found', () => {
     const rootPath = '/public'
     const requetRoute = '/index/someFileNeverExists'
-    buildStaticHandler('get', requetRoute, false, rootPath)(mockReq, mockRes)
+    buildHandlerWithOptions(
+      'get',
+      requetRoute,
+      false,
+      rootPath
+    )(mockReq, mockRes)
     expect(mockRes.writeStatus).toHaveBeenCalledTimes(1)
     expect(mockRes.writeStatus).toHaveBeenCalledWith(
       `404 ${TonStatusCodes[404]}`
+    )
+  })
+
+  it(`should set Content-Type to application/octet-stream,\
+if file extension name as empty`, () => {
+    const rootPath = '/public'
+    const requetRoute = '/index/someFileNeverExists'
+    mockReq.getUrl = jest.fn(() => '')
+    buildHandlerWithOptions(
+      'get',
+      requetRoute,
+      true,
+      rootPath,
+      false
+    )(mockReq, mockRes)
+    expect(mockRes.writeHeader).toHaveBeenNthCalledWith(
+      1,
+      'Content-Type',
+      'application/octet-stream'
     )
   })
 })
