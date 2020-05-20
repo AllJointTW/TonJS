@@ -125,6 +125,63 @@ describe('readFileStream', () => {
     expect(mime).toBe('text/plain')
   })
 
+  it('should emit the 413 error, if busboy emit the limit event', async () => {
+    mockReq.getHeader = jest.fn(input => {
+      switch (input) {
+        case 'content-type':
+          return fakeContentTypeWithFile
+        case 'content-length':
+          return fakeContentLengthWithFile
+        default:
+          return ''
+      }
+    })
+    mockRes.onData = fn => {
+      fn(toArrayBuffer(fakeFormDataBufferWithFile), true)
+      return mockRes
+    }
+
+    const { stream } = await readFileStream(mockReq, mockRes)
+
+    expect(stream instanceof Readable).toBe(true)
+
+    return new Promise(done => {
+      stream.on('error', err => {
+        expect(err).toEqual(ton.create4xxError(413, ton.TonStatusCodes[413]))
+        done()
+      })
+      stream.emit('limit')
+    })
+  })
+
+  it('should emit the 413 error, if reach the file size limit', async () => {
+    mockReq.getHeader = jest.fn(input => {
+      switch (input) {
+        case 'content-type':
+          return fakeContentTypeWithFile
+        case 'content-length':
+          return fakeContentLengthWithFile
+        default:
+          return ''
+      }
+    })
+    mockRes.onData = fn => {
+      fn(toArrayBuffer(fakeFormDataBufferWithFile), true)
+      return mockRes
+    }
+
+    const { stream } = await readFileStream(mockReq, mockRes, { limit: '0b' })
+
+    expect(stream instanceof Readable).toBe(true)
+
+    return new Promise(done => {
+      stream.on('error', err => {
+        expect(err).toEqual(ton.create4xxError(413, ton.TonStatusCodes[413]))
+        done()
+      })
+    })
+  })
+
   it('should emit error, if busboy emit the error', async () => {
     mockReq.getHeader = jest.fn(input => {
       switch (input) {

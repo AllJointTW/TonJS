@@ -9,12 +9,12 @@ import {
   sendError,
   create4xxError
 } from '../packages/ton'
-import { readFileStream } from '../packages/upload'
+import { readFileStream } from '../packages/upload/src'
 
 const uploadFile: TonHandler = async (req, res) => {
   const temp = join(__dirname, 'temp/sample.jpg')
   const writeStream = createWriteStream(temp)
-  const file = await readFileStream(req, res, { limit: '10mb' })
+  const file = await readFileStream(req, res, { limit: '1mb' })
 
   // missing file
   if (!file.name) {

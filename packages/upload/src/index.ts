@@ -1,6 +1,13 @@
 import { Readable, PassThrough, pipeline } from 'stream'
 import Busboy from 'busboy'
-import { TonRequest, TonResponse, readStream } from '@tonjs/ton'
+import bytes from 'bytes'
+import {
+  TonRequest,
+  TonResponse,
+  readStream,
+  create4xxError,
+  TonStatusCodes
+} from '@tonjs/ton'
 
 export function createBusboy(options: busboy.BusboyConfig = {}) {
   try {
@@ -14,10 +21,12 @@ export function createBusboy(options: busboy.BusboyConfig = {}) {
   }
 }
 
+const defaultFileSize = bytes.parse('1mb')
+
 export function readFileStream(
   req: TonRequest,
   res: TonResponse,
-  options?: { limit?: string }
+  { limit = '1mb' }: { limit?: string } = {}
 ): Promise<{
   field?: string
   stream?: Readable
@@ -29,7 +38,22 @@ export function readFileStream(
     const headers = {
       'content-type': req.getHeader('content-type')
     }
-    const busboy = createBusboy({ headers, limits: { files: 1 } })
+    let fileSize = defaultFileSize
+
+    if (limit !== '1mb') {
+      fileSize = bytes.parse(limit)
+    }
+
+    const busboy = createBusboy({
+      headers,
+      limits: {
+        fieldNameSize: 100,
+        fields: 0,
+        fieldSize: 0,
+        fileSize,
+        files: 1
+      }
+    })
 
     busboy.on(
       'file',
@@ -40,29 +64,42 @@ export function readFileStream(
         encoding: string,
         mime: string
       ) => {
+        stream.on('limit', () => {
+          stream.destroy(create4xxError(413, TonStatusCodes[413]))
+        })
         resolve({ field, stream, name, encoding, mime })
       }
     )
 
-    pipeline(readStream(req, res, options), busboy, err => {
-      const errorEmitter = new PassThrough()
+    let defaultReadStreamLimit = '10mb'
 
-      if (err) {
-        Promise.resolve().then(() => {
-          process.nextTick(() => {
-            errorEmitter.emit('error', err)
+    if (limit !== '1mb') {
+      defaultReadStreamLimit = bytes.format(fileSize * 10)
+    }
+
+    pipeline(
+      readStream(req, res, { limit: defaultReadStreamLimit }),
+      busboy,
+      err => {
+        const errorEmitter = new PassThrough()
+
+        if (err) {
+          Promise.resolve().then(() => {
+            process.nextTick(() => {
+              errorEmitter.emit('error', err)
+            })
           })
+        }
+
+        // missing file or has error
+        resolve({
+          field: undefined,
+          stream: errorEmitter,
+          name: undefined,
+          encoding: undefined,
+          mime: undefined
         })
       }
-
-      // missing file or has error
-      resolve({
-        field: undefined,
-        stream: errorEmitter,
-        name: undefined,
-        encoding: undefined,
-        mime: undefined
-      })
-    })
+    )
   })
 }
