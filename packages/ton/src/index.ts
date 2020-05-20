@@ -233,9 +233,28 @@ export function sendStream(
     res.end()
   })
 
+  // without size
+  if (!data.size) {
+    data.on('data', chunk => {
+      if (res.aborted) {
+        return
+      }
+
+      const arrayBuffer = chunk.buffer.slice(
+        chunk.byteOffset,
+        chunk.byteOffset + chunk.byteLength
+      )
+
+      res.write(arrayBuffer)
+    })
+
+    return
+  }
+
+  // with size
   data.on('data', chunk => {
     if (res.aborted) {
-      return false
+      return
     }
 
     const arrayBuffer = chunk.buffer.slice(
@@ -249,11 +268,11 @@ export function sendStream(
     if (firstTryDone) {
       res.aborted = true
       data.destroy()
-      return firstTryOk
+      return
     }
 
     if (firstTryOk) {
-      return firstTryOk
+      return
     }
 
     // pause because backpressure
@@ -279,8 +298,6 @@ export function sendStream(
 
       return ok
     })
-
-    return firstTryOk
   })
 }
 
