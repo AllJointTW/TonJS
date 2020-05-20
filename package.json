@@ -7,6 +7,7 @@
     "packages/bin",
     "packages/cors",
     "packages/upload",
+    "packages/compress",
     "packages/balance"
   ],
   "scripts": {

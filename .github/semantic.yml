@@ -10,4 +10,5 @@ scopes:
   - logger
   - cors
   - upload
+  - compress
   - balance
