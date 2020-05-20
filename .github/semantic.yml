@@ -9,5 +9,6 @@ scopes:
   - bin
   - logger
   - cors
+  - upload
   - compress
   - balance

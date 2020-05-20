@@ -6,11 +6,12 @@
     "packages/ton",
     "packages/bin",
     "packages/cors",
+    "packages/upload",
     "packages/compress",
     "packages/balance"
   ],
   "scripts": {
-    "dev": "nodemon --watch '{packages,example}/**/*.{ts,js}' --ignore '{packages,example}/**/*.{spec,test}.{ts,js}' --exec 'ts-node'",
+    "dev": "nodemon --watch '{packages,example}/**/*.{ts,js,json}' --ignore '{packages,example}/**/*.{spec,test}.{ts,js,json}' --exec 'node --inspect --require ts-node/register'",
     "format": "prettier '**/*.{js,json,ts,md,yaml}' !**/dist/** !./dist/** !**/coverage/** --write --no-semi --single-quote && yarn lint --fix",
     "lint": "eslint '**/*.ts'",
     "test": "jest",

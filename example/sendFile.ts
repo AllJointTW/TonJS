@@ -1,9 +1,9 @@
-import { join } from 'path'
+import { resolve } from 'path'
 import { createReadStream, statSync } from 'fs'
 import { TonHandler, TonStream, sendStream } from '../packages/ton'
 // import { sendCompressedStream } from '../packages/compress'
 
-const target = join(__dirname, 'public/sample.jpg')
+const target = resolve(__dirname, 'public/sample.jpg')
 const { size } = statSync(target)
 const sendFile: TonHandler = (req, res) => {
   const stream: TonStream = createReadStream(target)
