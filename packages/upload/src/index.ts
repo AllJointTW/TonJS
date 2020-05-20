@@ -55,6 +55,7 @@ export function readFileStream(
         })
       }
 
+      // missing file or has error
       resolve({
         field: undefined,
         stream: errorEmitter,

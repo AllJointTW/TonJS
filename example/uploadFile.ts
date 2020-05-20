@@ -16,9 +16,8 @@ const uploadFile: TonHandler = async (req, res) => {
   const writeStream = createWriteStream(temp)
   const file = await readFileStream(req, res, { limit: '10mb' })
 
-  // when all type of fields is not file, will file.stream be undefined
-  // when file of field is missing, file.name will be undefined
-  if (!file.stream || !file.name) {
+  // missing file
+  if (!file.name) {
     sendError(res, create4xxError(422, 'Missing File', { file: 'required' }))
 
     file.stream.destroy()
