@@ -469,7 +469,31 @@ if stream is end but response is on aborted`, () => {
     expect(mockRes.end).toHaveBeenCalledTimes(0)
   })
 
-  it('should not send the stream, if response is on abroted', () => {
+  it(`should not send the stream (without size),
+if response is on aborted`, () => {
+    mockRes.tryEnd = jest.fn()
+    delete mockStream.size
+    ton.sendStream(mockRes, 201, mockStream)
+
+    mockRes.aborted = true
+    mockStream.emit('data', buffer)
+    expect(mockRes.tryEnd).toHaveBeenCalledTimes(0)
+  })
+
+  it(`should send the stream (without size) by res.write,
+if stream without size`, () => {
+    mockRes.write = jest.fn((arrayBuffer: ArrayBuffer) => {
+      expect(Buffer.from(arrayBuffer).toString()).toBe(buffer.toString())
+      return mockRes
+    })
+    delete mockStream.size
+    ton.sendStream(mockRes, 201, mockStream)
+
+    mockStream.emit('data', buffer)
+    expect(mockRes.tryEnd).toHaveBeenCalledTimes(0)
+  })
+
+  it('should not send the stream, if response is on aborted', () => {
     mockRes.tryEnd = jest.fn()
     ton.sendStream(mockRes, 201, mockStream)
 
