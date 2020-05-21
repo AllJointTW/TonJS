@@ -1,38 +1,46 @@
 import { createWriteStream, unlinkSync } from 'fs'
-import { resolve } from 'path'
+import { join } from 'path'
+import { pipeline } from 'stream'
 import {
   TonHandler,
-  readStream,
+  TonRoutes,
+  sendText,
   sendJSON,
   sendError,
-  TonError,
-  TonRoutes,
-  sendText
-} from '../packages/ton/src'
-import { error } from '../packages/logger/dist'
+  create4xxError
+} from '../packages/ton'
+import { readFileStream } from '../packages/upload/src'
 
 const uploadFile: TonHandler = async (req, res) => {
-  const target = resolve(__dirname, 'temp.jpg')
-  const bodyStream = readStream(req, res, { limit: '10mb' })
-  const fileStream = createWriteStream(target)
+  const temp = join(__dirname, 'temp/sample.jpg')
+  const writeStream = createWriteStream(temp)
+  const file = await readFileStream(req, res, { limit: '1mb' })
 
-  bodyStream
-    .on('error', (err: Error | TonError) => {
+  // missing file
+  if (!file.name) {
+    sendError(res, create4xxError(422, 'Missing File', { file: 'required' }))
+
+    file.stream.destroy()
+    writeStream.destroy()
+    return
+  }
+
+  pipeline(file.stream, writeStream, err => {
+    if (err) {
       sendError(res, err)
-      fileStream.destroy()
-      unlinkSync(target) // delete the file
-    })
-    .on('end', () => {
-      sendJSON(res, 202, { message: 'success' }) // Accepted
-    })
-    .pipe(fileStream)
-    .on('error', error)
+      file.stream.destroy()
+      writeStream.destroy()
+      unlinkSync(temp)
+      return
+    }
+
+    sendJSON(res, 201, { message: 'Success' }) // Created
+  })
 }
-const index: TonHandler = (req, res) => {
+const uploadPage: TonHandler = (req, res) => {
   const html = `
 <form method="post" action="/files" enctype="multipart/form-data">
   <input type="file" name="file" /><br>
-  <input type="text" name="name" value="ton" /><br>
   <input type="submit" />
 </form>
 `
@@ -47,7 +55,7 @@ const routes: TonRoutes = [
   {
     methods: 'get',
     pattern: '/',
-    handler: index
+    handler: uploadPage
   }
 ]
 

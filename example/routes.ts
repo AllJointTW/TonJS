@@ -13,7 +13,7 @@ const routes: TonRoutes = [
   },
   {
     methods: 'any',
-    pattern: 'ping',
+    pattern: '/ping',
     handler: function pong() {
       return 'pong'
     }
