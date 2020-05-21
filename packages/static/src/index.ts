@@ -11,8 +11,17 @@ import {
 } from '@tonjs/ton'
 import { createReadStream, statSync, existsSync } from 'fs'
 import { getType } from 'mime/lite'
+import etag from 'etag'
 
-export type StaticOption = {
+export type CacheOption = {
+  enableCacheControl?: boolean
+  enableLastModified?: boolean
+  enableEtag?: boolean
+  maxage?: number
+  immutable?: boolean
+}
+
+export type StaticOption = CacheOption & {
   root?: string
   enableDefaultIndex?: boolean
   index?: string
@@ -74,4 +83,63 @@ export function createStatic(options: StaticOption): TonHandler {
       root,
       enableDefaultIndex
     })
+}
+
+const isConditionalGET = function isConditionalGET(req: TonRequest) {
+  return (
+    req.getHeader('if-match') ||
+    req.getHeader('if-unmodified-since') ||
+    req.getHeader('if-none-match') ||
+    req.getHeader('if-modified-since')
+  )
+}
+
+// const isPreconditionFailure = function isPreconditionFailure(req: TonRequest) {
+//   // if-match
+//   const match = req.getHeader('if-match')
+//   if (match) {
+//     return (
+//       !etag ||
+//       (match !== '*' &&
+//         parseTokenList(match).every(function(match) {
+//           return (
+//             match !== etag && match !== `W/${etag}` && `W/${match}` !== etag
+//           )
+//         }))
+//     )
+//   }
+
+//   // if-unmodified-since
+//   const unmodifiedSince = parseHttpDate(req.headers['if-unmodified-since'])
+//   if (!isNaN(unmodifiedSince)) {
+//     const lastModified = parseHttpDate(res.getHeader('Last-Modified'))
+//     return isNaN(lastModified) || lastModified > unmodifiedSince
+//   }
+
+//   return false
+// }
+
+const setCacheHeaders = function setCacheHeaders(
+  res: TonResponse,
+  options: CacheOption
+) {
+  // TODO file stat should be in public
+  const stat = statSync('mockPath')
+  // if enable cache
+  if (options.enableCacheControl) {
+    let cacheControl = `public, max-age=${Math.floor(options.maxage / 1000)}`
+    if (options.immutable) {
+      cacheControl += ', immutable'
+    }
+    res.writeHeader('Cache-Control', cacheControl)
+  }
+  // set Last-Modified
+  if (options.enableLastModified) {
+    res.writeHeader('Last-Modified', stat.mtime.toUTCString())
+  }
+
+  // set ETag
+  if (options.enableEtag) {
+    res.writeHeader('ETag', etag(stat))
+  }
 }
