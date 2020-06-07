@@ -387,7 +387,10 @@ export function readBuffer(
 
 export async function readText(
   res: TonResponse,
-  { limit = '100kb', encoding = 'utf-8' } = {}
+  {
+    limit = '100kb',
+    encoding = 'utf-8'
+  }: { limit?: string; encoding?: BufferEncoding } = {}
 ): Promise<string> {
   const body = await readBuffer(res, { limit })
   return body.toString(encoding)
@@ -395,7 +398,10 @@ export async function readText(
 
 export async function readJSON(
   res: TonResponse,
-  { limit = '100kb', encoding = 'utf-8' } = {}
+  {
+    limit = '100kb',
+    encoding = 'utf-8'
+  }: { limit?: string; encoding?: BufferEncoding } = {}
 ): Promise<any> {
   const body = await readText(res, { limit, encoding })
   try {
