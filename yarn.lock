@@ -3,26 +3,15 @@
 
 
 "@alljoint-next/eslint-config-typescript@^0.3.0":
-  version "0.3.3"
-  resolved "https://registry.yarnpkg.com/@alljoint-next/eslint-config-typescript/-/eslint-config-typescript-0.3.3.tgz#9954c4b5aa13f468fd3358dc68b5ed5d0cd1e369"
-  integrity sha512-6TUZBZuBmDMxb+uFo1w13lmMUARKo5aQfQXzH0HWWlK8c6f34CUdw9wMDQ9tmBd5dCzxASN0tSU4jRX59MhxwQ==
+  version "0.3.7"
+  resolved "https://registry.yarnpkg.com/@alljoint-next/eslint-config-typescript/-/eslint-config-typescript-0.3.7.tgz#38f9991467f18a7061f8c5a47cd7d1e6dd8e367c"
+  integrity sha512-7bu/e6EBKHoaWzF240WOGU5ezOZZ4Emhw9mYYQ7PdJWTasEhbV7cf0OR+irKrc0p7s2LQx6BEuG968vdlhj3Dg==
   dependencies:
-    "@alljoint-next/eslint-config" "0.3.2"
+    "@alljoint-next/eslint-config" "0.3.6"
     "@typescript-eslint/eslint-plugin" "^2.19.2"
     "@typescript-eslint/parser" "^2.19.2"
 
-"@alljoint-next/eslint-config@0.3.2":
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/@alljoint-next/eslint-config/-/eslint-config-0.3.2.tgz#f90887b38d340164c6fb84251eabbc2d36d74ad5"
-  integrity sha512-3fjdAcuM23M5JcdznUuhvrRzn5NCLyphEnnYaV3GKP+zkPrGcyEHmbpOYyFC/P3PK1PpXnaDWJRIy83IgL6xlg==
-  dependencies:
-    eslint-config-airbnb-base "^14.0.0"
-    eslint-config-prettier "^6.10.0"
-    eslint-plugin-import "^2.20.1"
-    eslint-plugin-jest "^23.7.0"
-    eslint-plugin-prettier "^3.1.2"
-
-"@alljoint-next/eslint-config@^0.3.2":
+"@alljoint-next/eslint-config@0.3.6", "@alljoint-next/eslint-config@^0.3.2":
   version "0.3.6"
   resolved "https://registry.yarnpkg.com/@alljoint-next/eslint-config/-/eslint-config-0.3.6.tgz#a12bd8a24bdbdc426179afeee1282c7a9cd01164"
   integrity sha512-pubZ2aw4ni2daevPveuL5wi26r+jvGnyDqSBtxiMjJZTq3TeWna752kWm2pWd+1oqOepZLn3S7NNkFM5+ktGDg==
