@@ -23,9 +23,9 @@
     eslint-plugin-prettier "^3.1.2"
 
 "@alljoint-next/ts-config@^0.1.2":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@alljoint-next/ts-config/-/ts-config-0.1.7.tgz#f002d0e8b3ceb565f90b9f5c6a5742748e7574d2"
-  integrity sha512-XwUd0GRFj57OJqZetvjg0xTP1N0IpQpOuEXZGmW3p0OHDBe20ns3Q9N/kT8WEnhkbQtPY8rWTUJ30BS0a9uDJg==
+  version "0.1.11"
+  resolved "https://registry.yarnpkg.com/@alljoint-next/ts-config/-/ts-config-0.1.11.tgz#e1a3541a34ac07dafba640a83e1a1a0427635afc"
+  integrity sha512-CPJpMhf5lI14ytjjMJxNP0GaPhY0KkvXY7Qd92DGfxYkKyL5/nOD5TvGqsCGgJlYFD9YENFRmL+C2XYltry4Aw==
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.8.3":
   version "7.8.3"
