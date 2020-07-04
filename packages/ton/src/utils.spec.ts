@@ -42,7 +42,11 @@ beforeEach(() => {
     onAborted: jest.fn(),
     onData: jest.fn(),
     getRemoteAddress: jest.fn(),
-    cork: jest.fn()
+    cork: jest.fn(),
+    getRemoteAddressAsText: jest.fn(),
+    getProxiedRemoteAddress: jest.fn(),
+    getProxiedRemoteAddressAsText: jest.fn(),
+    upgrade: jest.fn()
   }
 
   mockApp = {

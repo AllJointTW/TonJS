@@ -48,7 +48,7 @@ export type TonHTTPMethods =
   | 'connect'
   | 'trace'
   | 'any'
-// eslint-disable-next-line camelcase, @typescript-eslint/camelcase
+// eslint-disable-next-line camelcase
 export type TonListenSocket = uWS.us_listen_socket
 export type TonRoute = {
   methods: TonHTTPMethods
@@ -562,7 +562,7 @@ export function routes(
 
 export function createApp(opts: TonAppSSLOptions = {}): TonApp {
   if (opts.ssl) {
-    /* eslint-disable @typescript-eslint/camelcase */
+    /* eslint-disable camelcase */
     return uWS.SSLApp({
       key_file_name: opts.key,
       cert_file_name: opts.cert,
@@ -570,7 +570,7 @@ export function createApp(opts: TonAppSSLOptions = {}): TonApp {
       dh_params_file_name: opts.dhParams,
       ssl_prefer_low_memory_usage: opts.preferLowMemoryUsage
     })
-    /* eslint-enable @typescript-eslint/camelcase */
+    /* eslint-enable camelcase */
   }
   return uWS.App()
 }
