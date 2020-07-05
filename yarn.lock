@@ -2171,6 +2171,20 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
+"@tonjs/logger@0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@tonjs/logger/-/logger-0.1.1.tgz#5b1a7874afaf60d13e08a55e5778f1855a7e9c5b"
+  integrity sha512-xGGDKP+N/Ghc8YLsnzLvE5IGFtajU2dttRCkdHiP50QyDuiuHataMMryWFT0wjCY548DCivA6VxhVywa2nK24g==
+
+"@tonjs/ton@0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@tonjs/ton/-/ton-0.1.1.tgz#be8578d78dabf7cf9e0368f34261cd8574af28f6"
+  integrity sha512-TdSvIKf3yS+ccuW5rdWiyOF13jV/jXYkcFLTDOfKq5sKJxGUaiYdrzY9l4eLDMdFGXGTWkYWLPYr0KxLwTz7Fw==
+  dependencies:
+    "@tonjs/logger" "0.1.1"
+    bytes "^3.1.0"
+    uWebSockets.js uNetworking/uWebSockets.js#v17.4.0
+
 "@types/babel__core@^7.1.7":
   version "7.1.7"
   resolved "https://registry.yarnpkg.com/@types/babel__core/-/babel__core-7.1.7.tgz#1dacad8840364a57c98d0dd4855c6dd3752c6b89"
@@ -5595,7 +5609,7 @@ esutils@^2.0.2:
   resolved "https://registry.yarnpkg.com/esutils/-/esutils-2.0.3.tgz#74d2eb4de0b8da1293711910d50775b9b710ef64"
   integrity sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==
 
-etag@~1.8.1:
+etag@^1.8.1, etag@~1.8.1:
   version "1.8.1"
   resolved "https://registry.yarnpkg.com/etag/-/etag-1.8.1.tgz#41ae2eeb65efa62268aebfea83ac7d79299b0887"
   integrity sha1-Qa4u62XvpiJorr/qg6x9eSmbCIc=
@@ -8549,7 +8563,7 @@ mime@1.6.0:
   resolved "https://registry.yarnpkg.com/mime/-/mime-1.6.0.tgz#32cd9e5c64553bd58d19a568af452acff04981b1"
   integrity sha512-x0Vn8spI+wuJ1O6S7gnbaQg8Pxh4NNHb7KSINmEWKiPE4RKOplvijn+NkmYmmRgP68mc70j2EbeTFRsrswaQeg==
 
-mime@^2.0.3, mime@^2.4.4:
+mime@^2.0.3, mime@^2.4.4, mime@^2.4.5:
   version "2.4.6"
   resolved "https://registry.yarnpkg.com/mime/-/mime-2.4.6.tgz#e5b407c90db442f2beb5b162373d07b69affa4d1"
   integrity sha512-RZKhC3EmpBchfTGBVb8fb+RL2cWyw/32lshnsETttkBAyAUXSGHxbEJWWRXc751DrIxG1q04b8QwMbAwkRPpUA==
@@ -12119,6 +12133,10 @@ typescript@^3.8.2:
   version "3.9.6"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.9.6.tgz#8f3e0198a34c3ae17091b35571d3afd31999365a"
   integrity sha512-Pspx3oKAPJtjNwE92YS05HQoY7z2SFyOpHo9MqJor3BXAGNaPUs83CuVp9VISFkSjyRfiTpmKuAYGJB7S7hOxw==
+
+uWebSockets.js@uNetworking/uWebSockets.js#v17.4.0:
+  version "17.4.0"
+  resolved "https://codeload.github.com/uNetworking/uWebSockets.js/tar.gz/116a85f9668dcb03e7799db06dc8275bc43c0963"
 
 uWebSockets.js@uNetworking/uWebSockets.js#v18.3.0:
   version "18.3.0"

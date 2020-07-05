@@ -8,6 +8,7 @@
     "packages/cors",
     "packages/upload",
     "packages/compress",
+    "packages/static",
     "packages/balance"
   ],
   "scripts": {
