@@ -1,0 +1,17 @@
+version: '3'
+services:
+  redis:
+    image: redis:6-alpine
+    restart: always
+    command: redis-server --appendonly yes --requirepass pass
+    ports:
+      - 6379:6379
+
+    networks:
+      - redis-network
+
+    # volumes:
+    #   - redis:/data
+
+networks:
+  redis-network:

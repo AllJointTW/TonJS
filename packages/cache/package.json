@@ -1,0 +1,50 @@
+{
+  "name": "@tonjs/cache",
+  "version": "0.2.0",
+  "keywords": [
+    "http",
+    "benchmark",
+    "fast",
+    "light",
+    "lightweight",
+    "web",
+    "web-framework",
+    "ton",
+    "tonjs",
+    "async",
+    "await",
+    "micro",
+    "microservice",
+    "express",
+    "koa",
+    "hapi",
+    "nest"
+  ],
+  "description": "The cache module of tonjs.",
+  "engines": {
+    "node": ">=12.x"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "dist/index.js",
+  "type": "dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": "git@github.com:AllJointTW/TonJS.git",
+  "author": "TZU-YEN, CHANG <try_love_tom@alljoint.tw>",
+  "license": "GPL-3.0",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "yarn build"
+  },
+  "devDependencies": {
+    "@types/ioredis": "^4.17.0",
+    "@types/lru-cache": "^5.1.0"
+  },
+  "peerDependencies": {
+    "ioredis": "^4.17.3",
+    "lru-cache": "^5.1.1"
+  }
+}

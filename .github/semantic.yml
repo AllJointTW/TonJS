@@ -11,4 +11,5 @@ scopes:
   - cors
   - upload
   - compress
+  - cache
   - balance

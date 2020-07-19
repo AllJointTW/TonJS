@@ -8,6 +8,7 @@
     "packages/cors",
     "packages/upload",
     "packages/compress",
+    "packages/cache",
     "packages/balance"
   ],
   "scripts": {
@@ -31,8 +32,10 @@
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
     "husky": "^4.2.3",
+    "ioredis": "^4.17.3",
     "jest": "^25.3.0",
     "lerna": "3.22.0",
+    "lru-cache": "^5.1.1",
     "nodemon": "^2.0.2",
     "prettier": "^1.19.1",
     "rimraf": "^3.0.2",
