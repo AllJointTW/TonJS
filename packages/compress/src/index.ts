@@ -54,7 +54,7 @@ export function sendCompressedStream(
     (typeof data.size === 'number' && data.size < thresholdSize) ||
     accept.includes('identity')
   ) {
-    sendStream(res, statusCode, data, headers)
+    sendStream(res, statusCode, data, { headers })
     return
   }
 
@@ -67,13 +67,15 @@ export function sendCompressedStream(
         statusCode,
         data.pipe(compressMethods[compressionTypes[index]]),
         {
-          ...headers,
-          'Content-Encoding': compressionTypes[index]
+          headers: {
+            ...headers,
+            'Content-Encoding': compressionTypes[index]
+          }
         }
       )
       return
     }
   }
 
-  sendStream(res, statusCode, data, headers)
+  sendStream(res, statusCode, data, { headers })
 }

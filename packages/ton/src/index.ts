@@ -21,6 +21,9 @@ export type TonResponse = uWS.HttpResponse & {
 export type TonStream = stream.Readable & { size?: number }
 export type TonData = string | number | object | TonStream | Error
 export type TonHeaders = { [key: string]: string }
+export type TonLoggerOptions = { logger?: TonLogger }
+export type TonReadOptions = { limit?: string; encoding?: BufferEncoding }
+export type TonSendOptions = { headers?: TonHeaders; logger?: TonLogger }
 export type TonHandler = (
   req: TonRequest,
   res: TonResponse
@@ -104,11 +107,14 @@ export function writeStatus(res: TonResponse, statusCode: number): void {
   )
 }
 
-export function writeHeaders(res: TonResponse, headers: TonHeaders): void {
+export function writeHeaders(res: TonResponse, headers: TonHeaders = {}): void {
   Object.keys(headers).forEach(key => res.writeHeader(key, headers[key]))
 }
 
-export function sendEmpty(res: TonResponse, headers: TonHeaders = {}): void {
+export function sendEmpty(
+  res: TonResponse,
+  { headers = {} }: TonSendOptions = {}
+): void {
   checkIsNotAborted(res)
   writeStatus(res, 204)
   writeHeaders(res, headers)
@@ -120,7 +126,7 @@ export function sendText(
   res: TonResponse,
   statusCode: number,
   data: string,
-  headers: TonHeaders = {}
+  { headers = {} }: TonSendOptions = {}
 ): void {
   checkIsNotAborted(res)
 
@@ -141,7 +147,7 @@ export function sendJSON(
   res: TonResponse,
   statusCode: number,
   data: object,
-  headers: TonHeaders = {}
+  { headers = {} }: TonSendOptions = {}
 ): void {
   checkIsNotAborted(res)
 
@@ -168,9 +174,7 @@ export function unwrapError(error: TonError) {
 export function sendError(
   res: TonResponse,
   err: TonError | Error,
-  headers: TonHeaders = {},
-  /* istanbul ignore next */
-  { logger = tonLogger }: { logger?: TonLogger } = {}
+  { headers = {}, logger = tonLogger }: TonSendOptions = {}
 ): void {
   try {
     checkIsNotAborted(res)
@@ -186,9 +190,14 @@ export function sendError(
   const data = { message }
 
   if (process.env.NODE_ENV === 'production' && statusCode >= 500) {
-    sendJSON(res, statusCode, { message: TonStatusCodes[statusCode] }, headers)
+    sendJSON(
+      res,
+      statusCode,
+      { message: TonStatusCodes[statusCode] },
+      { headers }
+    )
   } else {
-    sendJSON(res, statusCode, data, headers)
+    sendJSON(res, statusCode, data, { headers })
   }
 
   if (statusCode < 500) {
@@ -202,7 +211,7 @@ export function sendStream(
   res: TonResponse,
   statusCode: number,
   data: TonStream,
-  headers: TonHeaders = {}
+  { headers = {} }: TonSendOptions = {}
 ): void {
   checkIsNotAborted(res)
 
@@ -317,32 +326,31 @@ export function send(
   res: TonResponse,
   statusCode: number,
   data?: TonData | void,
-  headers: TonHeaders = {},
-  options?: { logger: TonLogger }
+  options?: TonSendOptions
 ): void {
   checkIsNotAborted(res)
 
   if (statusCode === 204 || typeof data === 'undefined' || data === null) {
-    sendEmpty(res, headers)
+    sendEmpty(res, options)
     return
   }
 
   if (typeof data === 'string') {
-    sendText(res, statusCode, data as string, headers)
+    sendText(res, statusCode, data as string, options)
     return
   }
 
   if (data instanceof stream.Readable) {
-    sendStream(res, statusCode, data as TonStream, headers)
+    sendStream(res, statusCode, data as TonStream, options)
     return
   }
 
   if (data instanceof Error) {
-    sendError(res, data, headers, options)
+    sendError(res, data, options)
     return
   }
 
-  sendJSON(res, statusCode, data as object, headers)
+  sendJSON(res, statusCode, data as object, options)
 }
 
 const defaultLimitSize = bytes.parse('100kb')
@@ -350,7 +358,7 @@ const defaultFileLimitSize = bytes.parse('1mb')
 
 export function readBuffer(
   res: TonResponse,
-  { limit = '100kb' } = {}
+  { limit = '100kb' }: TonReadOptions = {}
 ): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     let limitSize = defaultLimitSize
@@ -387,10 +395,7 @@ export function readBuffer(
 
 export async function readText(
   res: TonResponse,
-  {
-    limit = '100kb',
-    encoding = 'utf-8'
-  }: { limit?: string; encoding?: BufferEncoding } = {}
+  { limit = '100kb', encoding = 'utf-8' }: TonReadOptions = {}
 ): Promise<string> {
   const body = await readBuffer(res, { limit })
   return body.toString(encoding)
@@ -398,10 +403,7 @@ export async function readText(
 
 export async function readJSON(
   res: TonResponse,
-  {
-    limit = '100kb',
-    encoding = 'utf-8'
-  }: { limit?: string; encoding?: BufferEncoding } = {}
+  { limit = '100kb', encoding = 'utf-8' }: TonReadOptions = {}
 ): Promise<any> {
   const body = await readText(res, { limit, encoding })
   try {
@@ -414,7 +416,7 @@ export async function readJSON(
 export function readStream(
   req: TonRequest,
   res: TonResponse,
-  { limit = '1mb' } = {}
+  { limit = '1mb' }: TonReadOptions = {}
 ) {
   let limitSize = defaultFileLimitSize
 
@@ -463,7 +465,7 @@ export function readStream(
   return body
 }
 
-export function handler(fn: TonHandler, options?: { logger: TonLogger }) {
+export function handler(fn: TonHandler, options?: TonSendOptions) {
   return async (res: TonResponse, req: TonRequest): Promise<void> => {
     res.aborted = false
     res.onAborted(() => {
@@ -477,14 +479,9 @@ export function handler(fn: TonHandler, options?: { logger: TonLogger }) {
         return
       }
 
-      send(res, res.statusCode || 200, result, undefined, options)
+      send(res, res.statusCode || 200, result, options)
     } catch (err) {
-      sendError(
-        res,
-        create5xxError(500, TonStatusCodes[500], err),
-        undefined,
-        options
-      )
+      sendError(res, create5xxError(500, TonStatusCodes[500], err), options)
     }
   }
 }
@@ -494,7 +491,7 @@ export function route(
   methods: TonHTTPMethods,
   pattern: string,
   routeHandler: TonHandler,
-  options?: { logger: TonLogger }
+  options?: TonSendOptions
 ) {
   app[methods](pattern, handler(routeHandler, options))
 }
@@ -504,7 +501,7 @@ export function createRouteWith(methods: TonHTTPMethods) {
     app: TonApp,
     pattern: string,
     routeHandler: TonHandler,
-    options?: { logger: TonLogger }
+    options?: TonSendOptions
   ) => route(app, methods, pattern, routeHandler, options)
 }
 
@@ -531,7 +528,7 @@ export function routes(
   app: TonApp,
   endpoints: TonHandler | TonRoute | TonRoutes,
   /* istanbul ignore next */
-  { logger = tonLogger }: { logger?: TonLogger } = {}
+  { logger = tonLogger, headers = {} }: TonSendOptions = {}
 ) {
   logger.debug('routes:')
 
@@ -540,7 +537,7 @@ export function routes(
       const { methods, pattern, handler: handlerOfEndpoints } = item
       const name = getHandlerName(handlerOfEndpoints)
       logger.debug(`  ${methods} ${pattern} => ${name}()`)
-      route(app, methods, pattern, handlerOfEndpoints)
+      route(app, methods, pattern, handlerOfEndpoints, { logger, headers })
     })
     return
   }
@@ -549,14 +546,14 @@ export function routes(
     const { methods, pattern, handler: handlerOfEndpoint } = endpoints
     const name = getHandlerName(handlerOfEndpoint)
     logger.debug(`  ${methods} ${pattern} => ${name}()`)
-    route(app, methods, pattern, handlerOfEndpoint)
+    route(app, methods, pattern, handlerOfEndpoint, { logger, headers })
     return
   }
 
   if (typeof endpoints === 'function') {
     const name = getHandlerName(endpoints as TonHandler)
     logger.debug(`  any /* => ${name}()`)
-    route(app, 'any', '/*', endpoints as TonHandler)
+    route(app, 'any', '/*', endpoints as TonHandler, { logger, headers })
   }
 }
 
@@ -598,7 +595,7 @@ export function close(token: TonListenSocket) {
 export function registerGracefulShutdown(
   socket: TonListenSocket,
   /* istanbul ignore next */
-  { logger = tonLogger }: { logger?: TonLogger } = {}
+  { logger = tonLogger }: TonLoggerOptions = {}
 ) {
   let hasBeenShutdown = false
 
