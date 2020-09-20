@@ -3,9 +3,9 @@
 
 
 "@alljoint-next/eslint-config-typescript@^0.3.0":
-  version "0.3.9"
-  resolved "https://registry.yarnpkg.com/@alljoint-next/eslint-config-typescript/-/eslint-config-typescript-0.3.9.tgz#785e13cfb90cac972fd2f6912ea40d8a44695da0"
-  integrity sha512-Lb2r0pZBQBY4U/vB8VH3W8PaKNfOGIPlf//7XT0rFx+Z5kkvx/YFyhAz8+IT/duuh+lAMlpE1+IO0h3B7Jm/jA==
+  version "0.3.10"
+  resolved "https://registry.yarnpkg.com/@alljoint-next/eslint-config-typescript/-/eslint-config-typescript-0.3.10.tgz#dcde8b9471ba255501dd14d0b7e6652fbe4dbb27"
+  integrity sha512-GnQUcIzTNf95xBQ+VR97fziGvaovVvGBAq9w4M6dLHaKpdzcFWrWM8teo5vDgFcyPtmXmfQXrJyw10HJxDts3w==
   dependencies:
     "@alljoint-next/eslint-config" "0.3.8"
     "@typescript-eslint/eslint-plugin" "^3.5.0"
