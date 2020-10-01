@@ -12264,9 +12264,10 @@ typescript@^3.8.2:
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.9.7.tgz#98d600a5ebdc38f40cb277522f12dc800e9e25fa"
   integrity sha512-BLbiRkiBzAwsjut4x/dsibSTB6yWpwT5qWmC2OfuCg3GgVQCSgMs4vEctYPhsaGtd0AeuuHMkjZ2h2WG8MSzRw==
 
-uWebSockets.js@uNetworking/uWebSockets.js#v18.4.0:
-  version "18.4.0"
-  resolved "https://codeload.github.com/uNetworking/uWebSockets.js/tar.gz/3dbec7b56d627193e20705844b6bd10e49848b8c"
+uWebSockets.js@uNetworking/uWebSockets.js#v18.6.0:
+  version "18.6.0"
+  uid d447dce2d127e135ff4d023c0aabcf9beffcf132
+  resolved "https://codeload.github.com/uNetworking/uWebSockets.js/tar.gz/d447dce2d127e135ff4d023c0aabcf9beffcf132"
 
 uc.micro@^1.0.1, uc.micro@^1.0.5:
   version "1.0.6"
