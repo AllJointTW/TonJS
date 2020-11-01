@@ -45,7 +45,7 @@
   "dependencies": {
     "@tonjs/logger": "0.2.0",
     "@tonjs/ton": "0.2.0",
-    "yargs": "^15.3.1"
+    "yargs": "^16.1.0"
   },
   "devDependencies": {
     "@types/yargs": "^15.0.4",
