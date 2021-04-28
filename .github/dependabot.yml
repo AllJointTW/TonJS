@@ -1,0 +1,30 @@
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: monthly
+    time: "21:00"
+  open-pull-requests-limit: 10
+  reviewers:
+  - trylovetom
+  ignore:
+  - dependency-name: "@types/node"
+    versions:
+    - 14.14.19
+    - 14.14.22
+    - 14.14.31
+  - dependency-name: vuepress
+    versions:
+    - 1.7.1
+    - 1.8.0
+  - dependency-name: "@types/yargs"
+    versions:
+    - 15.0.12
+    - 16.0.0
+  - dependency-name: nodemon
+    versions:
+    - 2.0.6
+  - dependency-name: "@commitlint/config-conventional"
+    versions:
+    - 11.0.0
